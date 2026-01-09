@@ -1,14 +1,24 @@
 from torch import nn
 import torch
+from pytorch_lightning import LightningModule
 
-class Model(nn.Module):
-    """Just a dummy model to show how to structure your code"""
+
+
+class Model(LightningModule):
+    # import EfficientNet B4 model as classifier for 3 categories
     def __init__(self):
         super().__init__()
-        self.layer = nn.Linear(1, 1)
+        self.efficientnet = torch.hub.load(
+            "NVIDIA/DeepLearningExamples:torchhub",
+            "nvidia_efficientnet_b4",
+            pretrained=True,
+        )
+        self.classifier = nn.Linear(1000, 3)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.layer(x)
+    def forward(self, x):
+        x = self.efficientnet(x)
+        x = self.classifier(x)
+        return x
 
 if __name__ == "__main__":
     model = Model()
