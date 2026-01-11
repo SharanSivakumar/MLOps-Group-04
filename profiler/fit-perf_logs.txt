@@ -1,0 +1,27 @@
+FIT Profiler Report
+Profile stats for: records
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                                                   Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls  
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                                          ProfilerStep*         0.40%       2.072ms       100.00%     523.602ms     261.801ms             2  
+[pl][profile][Strategy]SingleDeviceStrategy.validati...         1.06%       5.544ms        96.31%     504.267ms     252.133ms             2  
+[pl][module]torchvision.models.efficientnet.Efficien...         0.04%     226.967us        93.88%     491.550ms     245.775ms             2  
+[pl][module]torch.nn.modules.container.Sequential: m...         0.14%     724.556us        93.58%     489.972ms     244.986ms             2  
+                                           aten::conv2d         0.16%     831.857us        57.78%     302.520ms       1.867ms           162  
+                                      aten::convolution         0.34%       1.785ms        57.62%     301.688ms       1.862ms           162  
+                                     aten::_convolution         0.37%       1.916ms        57.28%     299.903ms       1.851ms           162  
+                               aten::mkldnn_convolution        55.75%     291.931ms        56.91%     297.987ms       1.839ms           162  
+[pl][module]torch.nn.modules.container.Sequential: m...         0.05%     263.800us        39.24%     205.476ms     102.738ms             2  
+[pl][module]torchvision.models.efficientnet.MBConv: ...         0.06%     291.585us        26.70%     139.826ms      69.913ms             2  
+[pl][module]torch.nn.modules.container.Sequential: m...         0.10%     516.948us        26.65%     139.534ms      69.767ms             2  
+[pl][module]torchvision.ops.misc.Conv2dNormActivatio...         0.14%     754.428us        16.50%      86.382ms      43.191ms             2  
+[pl][module]torchvision.models.efficientnet.MBConv: ...         0.07%     389.693us        12.49%      65.387ms      32.693ms             2  
+[pl][module]torch.nn.modules.container.Sequential: m...         0.11%     601.161us        12.32%      64.526ms      32.263ms             2  
+[pl][module]torch.nn.modules.container.Sequential: m...         0.05%     259.112us        10.40%      54.471ms      27.235ms             2  
+                                       aten::batch_norm         0.10%     538.054us         9.90%      51.841ms     528.990us            98  
+[pl][module]torch.nn.modules.container.Sequential: m...         0.05%     275.920us         9.87%      51.669ms      25.834ms             2  
+                           aten::_batch_norm_impl_index         0.25%       1.330ms         9.80%      51.303ms     523.500us            98  
+[pl][module]torch.nn.modules.container.Sequential: m...         0.04%     203.127us         9.76%      51.089ms      25.545ms             2  
+                                aten::native_batch_norm         8.68%      45.474ms         9.47%      49.582ms     505.941us            98  
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
+Self CPU time total: 523.602ms
