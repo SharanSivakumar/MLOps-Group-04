@@ -38,6 +38,7 @@ colorama==0.4.6
     #   pytest
     #   tqdm
 coverage==7.6.9
+    # via group04
 distlib==0.4.0
     # via virtualenv
 fastapi==0.115.6
@@ -188,6 +189,7 @@ pymdown-extensions==10.20
     #   mkdocs-material
     #   mkdocstrings
 pytest==8.3.4
+    # via group04
 python-dateutil==2.9.0.post0
     # via ghp-import
 pytorch-lightning==2.6.0
@@ -238,7 +240,7 @@ torch==2.6.0 ; sys_platform == 'darwin'
     #   pytorch-lightning
     #   torchmetrics
     #   torchvision
-torch==2.6.0+cpu ; sys_platform != 'darwin'
+torch==2.6.0 ; sys_platform != 'darwin'
     # via
     #   group04
     #   pytorch-lightning
@@ -250,7 +252,7 @@ torchmetrics==1.8.2
     #   pytorch-lightning
 torchvision==0.21.0 ; (python_full_version < '3.14' and platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux') or sys_platform == 'darwin'
     # via group04
-torchvision==0.21.0+cpu ; (python_full_version >= '3.14' and sys_platform == 'linux') or (platform_machine != 'aarch64' and sys_platform == 'linux') or (platform_python_implementation != 'CPython' and sys_platform == 'linux') or (sys_platform != 'darwin' and sys_platform != 'linux')
+torchvision==0.21.0 ; (python_full_version >= '3.14' and sys_platform == 'linux') or (platform_machine != 'aarch64' and sys_platform == 'linux') or (platform_python_implementation != 'CPython' and sys_platform == 'linux') or (sys_platform != 'darwin' and sys_platform != 'linux')
     # via group04
 tqdm==4.67.1
     # via pytorch-lightning
