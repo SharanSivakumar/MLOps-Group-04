@@ -26,7 +26,7 @@ dependencies = [
     "markdown>=3.10",
     "pydantic>=2.12.5",
     "torch==2.6.0",
-    "typer==0.15.1",
+    "typer==0.21.1",
     "uvicorn==0.34.0",
     "pytorch-lightning",
     "torchmetrics",
