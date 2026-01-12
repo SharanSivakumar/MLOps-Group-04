@@ -38,6 +38,7 @@ colorama==0.4.6
     #   pytest
     #   tqdm
 coverage==7.6.9
+    # via group04
 distlib==0.4.0
     # via virtualenv
 fastapi==0.115.6
@@ -188,6 +189,7 @@ pymdown-extensions==10.20
     #   mkdocs-material
     #   mkdocstrings
 pytest==8.3.4
+    # via group04
 python-dateutil==2.9.0.post0
     # via ghp-import
 pytorch-lightning==2.6.0
