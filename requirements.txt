@@ -277,7 +277,7 @@ urllib3==2.6.3
     # via requests
 uvicorn==0.34.0
     # via group04
-virtualenv==20.36.0
+virtualenv==20.36.1
     # via pre-commit
 watchdog==6.0.0
     # via mkdocs
