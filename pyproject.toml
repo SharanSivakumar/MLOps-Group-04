@@ -35,6 +35,8 @@ dependencies = [
     "tensorboard>=2.20.0",
     "pytest>=8.3.4",
     "coverage>=7.6.9",
+    "dvc>=3.66.1",
+    "dvc-gs>=3.0.2",
 ]
 
 [dependency-groups]

@@ -1,0 +1,5 @@
+[core]
+    remote = storage
+    no_scm = true
+['remote "storage"']
+    url = gs://psychic-iridium-484208-c3-mlops-data/dvc

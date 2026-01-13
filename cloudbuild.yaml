@@ -1,0 +1,19 @@
+steps:
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "-t",
+        "europe-north1-docker.pkg.dev/$PROJECT_ID/ml-images/train-image:latest",
+        "-f",
+        "dockerfiles/train.dockerfile",
+        ".",
+      ]
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "push",
+        "europe-north1-docker.pkg.dev/$PROJECT_ID/ml-images/train-image:latest",
+      ]
+images:
+  - "europe-north1-docker.pkg.dev/$PROJECT_ID/ml-images/train-image:latest"
