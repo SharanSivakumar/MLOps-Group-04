@@ -1,19 +1,41 @@
 steps:
+  # 2. Build the container image
   - name: "gcr.io/cloud-builders/docker"
     args:
       [
         "build",
         "-t",
-        "europe-north1-docker.pkg.dev/$PROJECT_ID/ml-images/train-image:latest",
+        "europe-north1-docker.pkg.dev/$PROJECT_ID/ml-images/model-api:latest",
         "-f",
-        "dockerfiles/train.dockerfile",
+        "dockerfiles/api.dockerfile",
         ".",
       ]
+  # 3. Push the container image to Artifact Registry
   - name: "gcr.io/cloud-builders/docker"
     args:
       [
         "push",
-        "europe-north1-docker.pkg.dev/$PROJECT_ID/ml-images/train-image:latest",
+        "europe-north1-docker.pkg.dev/$PROJECT_ID/ml-images/model-api:latest",
       ]
+
+  # 4. Deploy to Cloud Run
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
+    args:
+      [
+        "run",
+        "deploy",
+        "model-api",
+        "--image",
+        "europe-north1-docker.pkg.dev/$PROJECT_ID/ml-images/model-api:latest",
+        "--region",
+        "europe-north1",
+        "--platform",
+        "managed",
+        "--set-env-vars",
+        "MODEL_GCS_URI=gs://psychic-iridium-484208-c3-mlops-data/models/ecg-epoch=01-val_loss=0.11.ckpt",
+        "--allow-unauthenticated",
+      ]
+
 images:
-  - "europe-north1-docker.pkg.dev/$PROJECT_ID/ml-images/train-image:latest"
+  - "europe-north1-docker.pkg.dev/$PROJECT_ID/ml-images/model-api:latest"
