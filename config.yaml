@@ -1,0 +1,45 @@
+# Random seed for reproducibility
+seed: 2026
+
+# Data parameters
+data:
+  data_dir: "data/time_series"
+  processed_dir: "data/processed"
+  batch_size: 8
+  num_workers: 4
+
+# Model parameters
+model:
+  lr: 1e-3
+  num_classes: 3
+
+# Training parameters
+training:
+  max_epochs: 1
+
+# Callbacks
+callbacks:
+  early_stopping:
+    patience: 5
+    monitor: "val_loss"
+    mode: "min"
+  
+  checkpoint:
+    monitor: "val_loss"
+    dirpath: "checkpoints"
+    filename: "ecg-{epoch:02d}-{val_loss:.2f}"
+    save_top_k: 1
+    mode: "min"
+
+# Logging
+logging:
+  log_dir: "lightning_logs"
+  name: "ecg_classification"
+
+# Profiler
+profiler:
+  dirpath: "profiler"
+  filename: "perf_logs"
+  export_to_chrome: true
+  row_limit: 20
+  sort_by_key: "cpu_time_total"
