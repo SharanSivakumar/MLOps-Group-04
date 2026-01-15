@@ -127,7 +127,7 @@ mkdocs-material-extensions==1.3.1
     # via mkdocs-material
 mkdocstrings==1.0.0
     # via mkdocstrings-python
-mkdocstrings-python==1.12.2
+mkdocstrings-python==2.0.1
 mpmath==1.3.0
     # via sympy
 multidict==6.7.0
