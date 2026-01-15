@@ -51,7 +51,7 @@ frozenlist==1.8.0
     # via
     #   aiohttp
     #   aiosignal
-fsspec==2025.12.0
+fsspec==2026.1.0
     # via
     #   pytorch-lightning
     #   torch
