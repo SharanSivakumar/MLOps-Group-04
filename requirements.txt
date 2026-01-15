@@ -256,7 +256,7 @@ torchvision==0.21.0 ; (python_full_version >= '3.14' and sys_platform == 'linux'
     # via group04
 tqdm==4.67.1
     # via pytorch-lightning
-typer==0.15.1
+typer==0.21.1
     # via group04
 typing-extensions==4.15.0
     # via
