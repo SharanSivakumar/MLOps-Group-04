@@ -275,7 +275,7 @@ typing-inspection==0.4.2
     # via pydantic
 urllib3==2.6.3
     # via requests
-uvicorn==0.34.0
+uvicorn==0.40.0
     # via group04
 virtualenv==20.36.1
     # via pre-commit
