@@ -155,7 +155,7 @@ packaging==25.0
     #   torchmetrics
 paginate==0.5.7
     # via mkdocs-material
-pathspec==1.0.2
+pathspec==1.0.3
     # via mkdocs
 pillow==12.1.0
     # via
