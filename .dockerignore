@@ -1,0 +1,81 @@
+# Data files (we pull via DVC, don't need them in image)
+# IMPORTANT: Include .dvc files first before excluding data directories
+!data/**/*.dvc
+!data/*.dvc
+
+# Now exclude the actual data directories
+data/time_series/
+data/images/
+data/processed/
+
+# But keep .gitkeep files
+!data/.gitkeep
+!data/*/.gitkeep
+!data/*/*/.gitkeep
+
+# DVC cache (very large, not needed for build)
+.dvc/cache/
+.dvc/tmp/
+
+# Model checkpoints and outputs
+checkpoints/**
+!checkpoints/.gitkeep
+lightning_logs/**
+!lightning_logs/.gitkeep
+profiler/**
+models/**
+
+# Python cache and virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+ENV/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Test and coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Documentation builds
+docs/site/
+docs/_build/
+
+# Logs
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Other
+.cache/
+.mypy_cache/
+.ruff_cache/
+
+# Git
+.git/
+.gitignore
+
+# Cloud Build
+.gcloudignore
+
