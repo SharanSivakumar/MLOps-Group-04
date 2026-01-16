@@ -1,10 +1,26 @@
 # MLOps Group04 2026 Project
 
-Students: [fill student ids]:
+Students:
 - Julian S194077
 - Xiaopeng S194408
 - Sharan S242656
 - David S250806
+
+## Guide to run instance
+Update the region based on your config
+
+gcloud builds submit --config cloudbuild.yaml .
+
+
+```
+gcloud ai custom-jobs create \
+  --region=europe-north1 \
+  --display-name=ecg-training-$(date +%Y%m%d-%H%M%S) \
+  --config=config.yaml
+```
+Note: Adjust cloudbuild and config with the artifact location and project details, setting the project id before executing should resolve isses
+
+For now also upload the data to DVC before running the build and execution of the project
 
 
 ## Aim
@@ -76,7 +92,3 @@ The directory structure of the project looks like this:
 └── tasks.py                  # Project tasks
 ```
 
-
-Created using [mlops_template](https://github.com/SkafteNicki/mlops_template),
-a [cookiecutter template](https://github.com/cookiecutter/cookiecutter) for getting
-started with Machine Learning Operations (MLOps).
