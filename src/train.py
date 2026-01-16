@@ -13,17 +13,14 @@ def main(config):
 
     # Data
     data_module = ECGDataModule(
-        data_dir=config.data.data_dir,
-        processed_dir=config.data.processed_dir,
-        batch_size=config.data.batch_size,
-        num_workers=config.data.num_workers
+        data_dir=args.data_dir,
+        processed_dir=args.processed_dir,
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
     )
 
     # Model
-    model = ECGClassifier(
-        lr=config.model.lr,
-        num_classes=config.model.num_classes
-    )
+    model = ECGClassifier(lr=args.lr, num_classes=3)
 
     # Callbacks
     checkpoint_callback = ModelCheckpoint(
@@ -33,12 +30,8 @@ def main(config):
         save_top_k=config.callbacks.checkpoint.save_top_k,
         mode=config.callbacks.checkpoint.mode,
     )
-    early_stopping = EarlyStopping(
-        monitor=config.callbacks.early_stopping.monitor,
-        patience=config.callbacks.early_stopping.patience,
-        mode=config.callbacks.early_stopping.mode
-    )
-    
+    early_stopping = EarlyStopping(monitor="val_loss", patience=5, mode="min")
+
     # Profiler
     profiler = PyTorchProfiler(
         dirpath=config.profiler.dirpath,
@@ -64,8 +57,22 @@ def main(config):
     # Test
     trainer.test(model, data_module)
 
+
 if __name__ == "__main__":
-    # Load configuration from YAML file
-    config = OmegaConf.load("config.yaml")
-    
-    main(config)
+    parser = argparse.ArgumentParser(description="ECG Classification Training")
+
+    # Data params
+    parser.add_argument("--data_dir", type=str, default="data/time_series", help="Path to raw data")
+    parser.add_argument("--processed_dir", type=str, default="data/processed", help="Path to save processed .pt files")
+    parser.add_argument("--batch_size", type=int, default=8, help="Batch size")
+    parser.add_argument("--num_workers", type=int, default=4, help="Number of dataloader workers")
+
+    # Model params
+    parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate")
+
+    # Trainer params
+    parser.add_argument("--max_epochs", type=int, default=2, help="Maximum number of epochs")
+
+    args = parser.parse_args()
+
+    main(args)

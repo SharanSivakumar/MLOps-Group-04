@@ -4,7 +4,8 @@ import torch
 from torch import nn
 from pytorch_lightning import LightningModule
 from torchmetrics import Accuracy, F1Score, Precision, Recall, MetricCollection
-from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
+from torchvision.models import efficientnet_b4, EfficientNet_B4_Weights
+
 
 class ECGClassifier(LightningModule):
     def __init__(self, lr: float = 1e-3, num_classes: int = 3):
@@ -13,11 +14,11 @@ class ECGClassifier(LightningModule):
         self.lr = lr
         self.num_classes = num_classes
 
-        # Load EfficientNet-B0
-        self.model = efficientnet_b0(weights=EfficientNet_B0_Weights.DEFAULT)
-        
+        # Load EfficientNet-B4
+        self.model = efficientnet_b4(weights=EfficientNet_B4_Weights.DEFAULT)
+
         # Modify first conv layer to accept 1 channel instead of 3
-        # Original: Conv2d(3, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+        # Original: Conv2d(3, 48, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
         old_conv = self.model.features[0][0]
         new_conv = nn.Conv2d(
             in_channels=1,
@@ -27,12 +28,12 @@ class ECGClassifier(LightningModule):
             padding=old_conv.padding,
             bias=old_conv.bias is not None,
         )
-        
+
         # Initialize weights for the new conv layer
         # Can Average the weights of the original 3 channels to initialize the single channel
         with torch.no_grad():
             new_conv.weight[:] = torch.mean(old_conv.weight, dim=1, keepdim=True)
-            
+
         self.model.features[0][0] = new_conv
 
         # Modify classifier to output num_classes
@@ -43,12 +44,14 @@ class ECGClassifier(LightningModule):
         self.loss_fn = nn.CrossEntropyLoss()
 
         # Metrics
-        metrics = MetricCollection({
-            "acc": Accuracy(task="multiclass", num_classes=num_classes),
-            "f1": F1Score(task="multiclass", num_classes=num_classes, average="macro"),
-            "prec": Precision(task="multiclass", num_classes=num_classes, average="macro"),
-            "rec": Recall(task="multiclass", num_classes=num_classes, average="macro"),
-        })
+        metrics = MetricCollection(
+            {
+                "acc": Accuracy(task="multiclass", num_classes=num_classes),
+                "f1": F1Score(task="multiclass", num_classes=num_classes, average="macro"),
+                "prec": Precision(task="multiclass", num_classes=num_classes, average="macro"),
+                "rec": Recall(task="multiclass", num_classes=num_classes, average="macro"),
+            }
+        )
         self.train_metrics = metrics.clone(prefix="train_")
         self.val_metrics = metrics.clone(prefix="val_")
         self.test_metrics = metrics.clone(prefix="test_")
@@ -84,6 +87,7 @@ class ECGClassifier(LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
         return optimizer
+
 
 if __name__ == "__main__":
     model = ECGClassifier()

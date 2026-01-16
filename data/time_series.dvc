@@ -1,0 +1,6 @@
+outs:
+- md5: 6ae570e1f795aa9741da096f7541b880.dir
+  size: 643364863
+  nfiles: 1603
+  hash: md5
+  path: time_series

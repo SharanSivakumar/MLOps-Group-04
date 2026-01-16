@@ -7,6 +7,7 @@ from pytorch_lightning import LightningDataModule
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, TensorDataset
 
+
 class ECGDataModule(LightningDataModule):
     def __init__(
         self,
@@ -36,18 +37,18 @@ class ECGDataModule(LightningDataModule):
         print("Preparing data...")
         X = []
         y = []
-        
+
         class_to_idx = {cls_name: i for i, cls_name in enumerate(self.classes)}
-        
+
         for cls_name in self.classes:
             cls_dir = self.data_dir / cls_name
             if not cls_dir.exists():
                 print(f"Warning: Directory {cls_dir} does not exist. Skipping.")
                 continue
-                
+
             files = list(cls_dir.glob("*.npy"))
             print(f"Loading {len(files)} files from {cls_name}...")
-            
+
             for file_path in files:
                 # Load numpy file (224, 224) float64
                 data = np.load(file_path).astype(np.float32)
@@ -61,13 +62,11 @@ class ECGDataModule(LightningDataModule):
 
         X = np.stack(X)  # (N, 1, 224, 224)
         y = np.array(y)
-        
+
         # Stratified Split: 60% Train, 20% Val, 20% Test
         # First split: 80% Train+Val, 20% Test
-        X_temp, X_test, y_temp, y_test = train_test_split(
-            X, y, test_size=0.2, stratify=y, random_state=42
-        )
-        
+        X_temp, X_test, y_temp, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
+
         # Second split: From the 80%, we need 60% of total for Train, so 0.75 of 0.8 = 0.6
         # The remaining 0.25 of 0.8 = 0.2 which is val.
         X_train, X_val, y_train, y_val = train_test_split(
@@ -75,7 +74,7 @@ class ECGDataModule(LightningDataModule):
         )
 
         print(f"Saving splits: Train {X_train.shape}, Val {X_val.shape}, Test {X_test.shape}")
-        
+
         torch.save({"x": torch.from_numpy(X_train), "y": torch.from_numpy(y_train)}, self.processed_dir / "train.pt")
         torch.save({"x": torch.from_numpy(X_val), "y": torch.from_numpy(y_val)}, self.processed_dir / "val.pt")
         torch.save({"x": torch.from_numpy(X_test), "y": torch.from_numpy(y_test)}, self.processed_dir / "test.pt")
@@ -88,7 +87,7 @@ class ECGDataModule(LightningDataModule):
         if stage == "fit" or stage is None:
             train_data = torch.load(self.processed_dir / "train.pt")
             self.train_dataset = TensorDataset(train_data["x"], train_data["y"])
-            
+
             val_data = torch.load(self.processed_dir / "val.pt")
             self.val_dataset = TensorDataset(val_data["x"], val_data["y"])
 
@@ -104,6 +103,7 @@ class ECGDataModule(LightningDataModule):
 
     def test_dataloader(self):
         return DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers)
+
 
 if __name__ == "__main__":
     # Test the data module
