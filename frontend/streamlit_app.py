@@ -1,26 +1,9 @@
 import streamlit as st
 import requests
 import pandas as pd
-import os
 from google.cloud import run_v2 
 
-@st.cache_resource
-def get_backend_url() -> str:
-    """Return the base URL of the Cloud Run service, or BACKEND env var."""
-    parent = "projects/psychic-iridium-484208-c3/locations/europe-north1"
-    client = run_v2.ServicesClient()
-    services = client.list_services(parent=parent)
-
-    for service in services:
-        if service.name.split("/")[-1] == "production-model":
-            return service.uri  # e.g. https://production-model-xxxxx.a.run.app
-
-    # Fallback (lets you override without API calls)
-    return os.environ.get("BACKEND", "")
-
-# Build the final predict endpoint
-BASE_URL = get_backend_url().rstrip("/")
-API_URL = f"{BASE_URL}/predict" if BASE_URL else "http://localhost:8000/predict"
+API_URL = "https://ecg-api-579499894470.europe-north1.run.app/predict"
 
 st.title("ECG Classifier")
 st.write("Upload a `.npy` file (expected sample shape leading to (1, 1, 224, 224) for the model).")
