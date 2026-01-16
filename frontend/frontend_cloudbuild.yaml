@@ -1,0 +1,57 @@
+# frontend/cloudbuild.yaml
+# Build, push, and deploy ONLY the frontend to Cloud Run.
+# Run from repo root:
+#   gcloud builds submit --config frontend/cloudbuild.yaml .
+
+substitutions:
+  _REGION: europe-north1
+  _AR_REPO: frontend      # <-- change this
+  _IMAGE_NAME: frontend-image
+  _SERVICE_NAME: production-frontend     # <-- change this if you want
+  _BACKEND_URL: ""                       # <-- optional: set to https://... if you want
+
+steps:
+  - id: "Build frontend image"
+    name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "-t",
+        "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:$SHORT_SHA",
+        "-f",
+        "frontend/frontend.dockerfile",
+        "frontend",
+      ]
+
+  - id: "Push frontend image"
+    name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "push",
+        "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:$SHORT_SHA",
+      ]
+
+  - id: "Deploy frontend to Cloud Run"
+    name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        set -e
+        DEPLOY_ARGS=(
+          run deploy "${_SERVICE_NAME}"
+          --image "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:$SHORT_SHA"
+          --region "${_REGION}"
+          --platform managed
+          --allow-unauthenticated
+        )
+
+        # Optional: set BACKEND env var if you provide _BACKEND_URL
+        if [ -n "${_BACKEND_URL}" ]; then
+          DEPLOY_ARGS+=( --set-env-vars "BACKEND=${_BACKEND_URL}" )
+        fi
+
+        gcloud "${DEPLOY_ARGS[@]}"
+
+images:
+  - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_IMAGE_NAME}:$SHORT_SHA"
