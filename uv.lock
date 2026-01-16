@@ -1191,6 +1191,7 @@ dependencies = [
     { name = "dvc" },
     { name = "dvc-gs" },
     { name = "fastapi" },
+    { name = "google-cloud-storage" },
     { name = "httpx" },
     { name = "loguru" },
     { name = "markdown" },
@@ -1213,7 +1214,6 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "coverage" },
-    { name = "httpx" },
     { name = "invoke" },
     { name = "mkdocs" },
     { name = "mkdocs-material" },
@@ -1229,6 +1229,7 @@ requires-dist = [
     { name = "dvc", specifier = ">=3.66.1" },
     { name = "dvc-gs", specifier = ">=3.0.2" },
     { name = "fastapi", specifier = "==0.115.6" },
+    { name = "google-cloud-storage", specifier = ">=2.10.0" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "markdown", specifier = ">=3.10" },
@@ -1249,7 +1250,6 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "coverage", specifier = "==7.6.9" },
-    { name = "httpx", specifier = ">=0.28.1" },
     { name = "invoke", specifier = "==2.2.1" },
     { name = "mkdocs", specifier = "==1.6.1" },
     { name = "mkdocs-material", specifier = "==9.4.6" },

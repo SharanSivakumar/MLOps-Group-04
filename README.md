@@ -6,21 +6,181 @@ Students:
 - Sharan S242656
 - David S250806
 
-## Guide to run instance
-Update the region based on your config
+## End‑to‑end cloud setup for this branch
 
-gcloud builds submit --config cloudbuild.yaml .
+This section explains how to go from a fresh clone to running training on Vertex AI using DVC‑managed data and Artifact Registry.
 
+### Prerequisites
 
+- **Local tools**
+  - `git`
+  - `python >= 3.12`
+  - [`uv`](https://github.com/astral-sh/uv) installed on your machine
+  - [`gcloud` CLI](https://cloud.google.com/sdk/docs/install) installed and initialized
+- **GCP resources**
+  - A Google Cloud project (project ID referenced as `PROJECT_ID` below)
+  - Billing enabled on the project
+  - APIs enabled:
+    - Vertex AI API
+    - Cloud Build API
+    - Artifact Registry API
+    - Cloud Storage API
+
+You can set the project once with:
+
+```bash
+gcloud config set project PROJECT_ID
 ```
+
+### 1. Clone the repository and install dependencies
+
+```bash
+git clone https://github.com/<your-org-or-user>/mlops-group-04.git
+cd mlops-group-04
+
+# Install dependencies via uv (creates/uses .venv)
+uv sync
+```
+
+### 2. Configure DVC and data remote
+
+This branch uses **DVC with a GCS remote**. The current `.dvc/config` points to:
+
+- `gs://psychic-iridium-484208-c3-mlops-data/dvc`
+
+If you want to use **your own** bucket, create one and update DVC:
+
+```bash
+# Create a bucket for DVC data (adjust name/region)
+gsutil mb -l europe-north1 gs://PROJECT_ID-mlops-data
+
+# Point DVC remote to your bucket
+uv run dvc remote modify storage url gs://PROJECT_ID-mlops-data/dvc
+```
+
+#### 2.1 Initial data upload (only needed once per dataset)
+
+If the remote is empty and you have the raw `.npy` data locally:
+
+```bash
+# Place data under data/time_series/AF, data/time_series/Noise, data/time_series/NSR, data/time_series/Other
+
+# Track the directory with DVC
+uv run dvc add data/time_series
+
+# Commit the .dvc file to git
+git add data/time_series.dvc
+git commit -m "Track time_series data with DVC"
+
+# Push data to the remote
+uv run dvc push data/time_series.dvc
+```
+
+After this, other users (and Vertex AI) will be able to `dvc pull` the data.
+
+#### 2.2 Pulling data (most users)
+
+If the data is already in the remote:
+
+```bash
+uv run dvc pull
+```
+
+This will populate `data/time_series/...` locally.
+
+### 3. Build and push the training image to Artifact Registry
+
+This branch uses **Cloud Build** and a training image in Artifact Registry.
+
+- **Artifact Registry repo**: `ml-images`
+- **Image URI** (as used in `config.yaml` and `cloudbuild.yaml`):
+  - `europe-north1-docker.pkg.dev/PROJECT_ID/ml-images/train-image:latest`
+
+If you do not already have the `ml-images` repository, create it once:
+
+```bash
+gcloud artifacts repositories create ml-images \
+  --repository-format=docker \
+  --location=europe-north1 \
+  --description="Training images for ECG project"
+```
+
+Then build and push the image (from the repo root):
+
+```bash
+# Ensure gcloud is set to the correct project
+gcloud config set project PROJECT_ID
+
+# Build and push using Cloud Build
+gcloud builds submit --config cloudbuild.yaml .
+```
+
+This will:
+- Build the training image using `dockerfiles/train.dockerfile`
+- Push it to `europe-north1-docker.pkg.dev/PROJECT_ID/ml-images/train-image:latest`
+
+If you change the project ID or region, update:
+- `cloudbuild.yaml` `image` / `-t` / `push` URIs
+- `config.yaml` `containerSpec.imageUri`
+
+### 4. Run training on Vertex AI
+
+With the image pushed and DVC data remote populated, submit a custom training job:
+
+```bash
 gcloud ai custom-jobs create \
   --region=europe-north1 \
   --display-name=ecg-training-$(date +%Y%m%d-%H%M%S) \
   --config=config.yaml
 ```
-Note: Adjust cloudbuild and config with the artifact location and project details, setting the project id before executing should resolve isses
 
-For now also upload the data to DVC before running the build and execution of the project
+To stream logs:
+
+```bash
+gcloud ai custom-jobs stream-logs projects/PROJECT_NUM/locations/europe-north1/customJobs/JOB_ID \
+  --region=europe-north1
+```
+
+You can obtain `JOB_ID` from the output of the `custom-jobs create` command or via:
+
+```bash
+gcloud ai custom-jobs list --region=europe-north1
+```
+
+### 5. Cancel or clean up jobs
+
+- **List running or pending jobs**:
+
+```bash
+gcloud ai custom-jobs list \
+  --region=europe-north1 \
+  --filter="state:JOB_STATE_RUNNING OR state:JOB_STATE_PENDING_QUEUE OR state:JOB_STATE_PENDING"
+```
+
+- **Cancel all running/pending jobs**:
+
+```bash
+gcloud ai custom-jobs list \
+  --region=europe-north1 \
+  --filter="state:JOB_STATE_RUNNING OR state:JOB_STATE_PENDING_QUEUE OR state:JOB_STATE_PENDING" \
+  --format="value(name)" | \
+  xargs -I {} gcloud ai custom-jobs cancel {} --region=europe-north1 2>/dev/null || true
+```
+
+### 6. Quick reference (happy path)
+
+- **One-time (per project)**:
+  - **Create GCS bucket** for DVC data and update `.dvc/config` (or use existing)
+  - **Create Artifact Registry** repo `ml-images`
+  - **Enable** Vertex AI, Cloud Build, Artifact Registry, and Storage APIs
+- **Per dataset**:
+  - Put data under `data/time_series/...`
+  - `uv run dvc add data/time_series`
+  - `uv run dvc push data/time_series.dvc`
+- **Per code change**:
+  - `gcloud builds submit --config cloudbuild.yaml .`
+  - `gcloud ai custom-jobs create --region=europe-north1 --display-name=... --config=config.yaml`
+  - Use `gcloud ai custom-jobs stream-logs ...` to monitor
 
 
 ## Aim
