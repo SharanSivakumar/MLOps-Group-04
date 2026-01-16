@@ -226,7 +226,7 @@ six==1.17.0
     # via python-dateutil
 starlette
     # via fastapi
-sympy==1.13.1
+sympy==1.14.0
     # via torch
 tensorboard==2.20.0
     # via group04
