@@ -1,4 +1,4 @@
-import argparse
+from omegaconf import OmegaConf
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger
@@ -8,8 +8,8 @@ from src.data import ECGDataModule
 from src.model import ECGClassifier
 
 
-def main(args):
-    seed_everything(42)
+def main(config):
+    seed_everything(config.seed)
 
     # Data
     data_module = ECGDataModule(
@@ -24,28 +24,28 @@ def main(args):
 
     # Callbacks
     checkpoint_callback = ModelCheckpoint(
-        monitor="val_loss",
-        dirpath="checkpoints",
-        filename="ecg-{epoch:02d}-{val_loss:.2f}",
-        save_top_k=1,
-        mode="min",
+        monitor=config.callbacks.checkpoint.monitor,
+        dirpath=config.callbacks.checkpoint.dirpath,
+        filename=config.callbacks.checkpoint.filename,
+        save_top_k=config.callbacks.checkpoint.save_top_k,
+        mode=config.callbacks.checkpoint.mode,
     )
     early_stopping = EarlyStopping(monitor="val_loss", patience=5, mode="min")
 
     # Profiler
     profiler = PyTorchProfiler(
-        dirpath="profiler",
-        filename="perf_logs",
-        export_to_chrome=True,
-        row_limit=20,
-        sort_by_key="cpu_time_total",
+        dirpath=config.profiler.dirpath,
+        filename=config.profiler.filename,
+        export_to_chrome=config.profiler.export_to_chrome,
+        row_limit=config.profiler.row_limit,
+        sort_by_key=config.profiler.sort_by_key,
     )
 
     # Trainer
     trainer = Trainer(
-        max_epochs=args.max_epochs,
+        max_epochs=config.training.max_epochs,
         callbacks=[checkpoint_callback, early_stopping],
-        logger=TensorBoardLogger("lightning_logs", name="ecg_classification"),
+        logger=TensorBoardLogger(config.logging.log_dir, name=config.logging.name),
         accelerator="auto",
         devices="auto",
         profiler=profiler,
