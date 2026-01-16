@@ -1,0 +1,104 @@
+name: Model Registry Workflow
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'models/**'
+      - 'checkpoints/**'
+      - 'src/model.py'
+      - 'src/evaluate.py'
+      - 'config.yaml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'models/**'
+      - 'checkpoints/**'
+      - 'src/model.py'
+      - 'src/evaluate.py'
+      - 'config.yaml'
+
+jobs:
+  validate-model:
+    name: Validate Model Registry Changes
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Validate model configuration
+        run: |
+          uv run python -c "import yaml; yaml.safe_load(open('config.yaml'))"
+
+      - name: Run model tests
+        run: uv run pytest tests/test_model.py -v
+
+      - name: Run evaluation tests
+        run: |
+          if [ -f tests/test_evaluate.py ]; then
+            uv run pytest tests/test_evaluate.py -v
+          fi
+
+  test-model-inference:
+    name: Test Model Inference
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Test model can be instantiated
+        run: |
+          uv run python -c "
+          import torch
+          from src.model import ECGClassifier
+          model = ECGClassifier(num_classes=3)
+          print('Model instantiated successfully')
+          dummy_input = torch.randn(1, 1, 224, 224)
+          output = model(dummy_input)
+          print(f'Model output shape: {output.shape}')
+          "
+
+  model-registry-summary:
+    name: Model Registry Summary
+    runs-on: ubuntu-latest
+    needs: [validate-model, test-model-inference]
+    if: always()
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for model files
+        run: |
+          echo "=== Model Registry Status ==="
+          echo "Models directory:"
+          ls -la models/ || echo "No models directory"
+          echo ""
+          echo "Checkpoints directory:"
+          ls -la checkpoints/ || echo "No checkpoints directory"
+
+      - name: Print summary
+        run: |
+          echo "✓ Model registry validation completed"
+          echo "Review the logs above for detailed information"
