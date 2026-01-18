@@ -16,6 +16,12 @@
 * The project uses `pre-commit` for managing pre-commit hooks. To run all hooks on all files, use
     `uv run pre-commit run --all-files`. For more information, refer to the `.pre-commit-config.yaml` file.
 
+The project has DVC and the models are stored at gs://psychic-iridium-484208-c3-mlops-data/models
+
+The project also has a artifcat registry repo at europe-north1-docker.pkg.dev/psychic-iridium-484208-c3/ml-images/
+
+
+
 # Code style
 
 * Follow existing code style.

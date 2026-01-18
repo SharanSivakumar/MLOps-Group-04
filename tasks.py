@@ -28,16 +28,26 @@ def test(ctx: Context) -> None:
 
 
 @task
-def docker_build(ctx: Context, progress: str = "plain") -> None:
-    """Build docker images."""
-    ctx.run(
-        f"docker build -t train:latest . -f dockerfiles/train.dockerfile --progress={progress}",
-        echo=True,
-        pty=not WINDOWS,
-    )
-    ctx.run(
-        f"docker build -t api:latest . -f dockerfiles/api.dockerfile --progress={progress}", echo=True, pty=not WINDOWS
-    )
+def docker_build(ctx: Context, progress: str = "plain", target: str = "all") -> None:
+    """Build docker images (target: 'api', 'frontend', 'all')."""
+    if target in ("train", "all"):
+        ctx.run(
+            f"docker build -t train:latest . -f dockerfiles/train.dockerfile --progress={progress}",
+            echo=True,
+            pty=not WINDOWS,
+        )
+    if target in ("api", "all"):
+        ctx.run(
+            f"docker build -t api:latest . -f dockerfiles/api.dockerfile --progress={progress}",
+            echo=True,
+            pty=not WINDOWS,
+        )
+    if target in ("frontend", "all"):
+        ctx.run(
+            f"docker build -t frontend:latest frontend -f frontend/frontend.dockerfile --progress={progress}",
+            echo=True,
+            pty=not WINDOWS,
+        )
 
 
 # Documentation commands
@@ -51,3 +61,68 @@ def build_docs(ctx: Context) -> None:
 def serve_docs(ctx: Context) -> None:
     """Serve documentation."""
     ctx.run("uv run mkdocs serve --config-file docs/mkdocs.yaml", echo=True, pty=not WINDOWS)
+
+
+# GCP Deployment commands
+@task
+def build_and_push_gcp(
+    ctx: Context,
+    service: str = "all",
+    region: str = "europe-north1",
+    ar_repo: str = "ml-images",
+    progress: str = "plain",
+) -> None:
+    project_id = ctx.run("gcloud config get-value project", hide=True).stdout.strip()
+
+    if service in ("api", "all"):
+        api_image = f"{region}-docker.pkg.dev/{project_id}/{ar_repo}/api-image:latest"
+        ctx.run(
+            f"docker build -t {api_image} . -f dockerfiles/api.dockerfile --progress={progress}",
+            echo=True,
+            pty=not WINDOWS,
+        )
+        ctx.run(f"docker push {api_image}", echo=True, pty=not WINDOWS)
+
+    if service in ("frontend", "all"):
+        frontend_image = f"{region}-docker.pkg.dev/{project_id}/{ar_repo}/frontend-image:latest"
+        ctx.run(
+            f"docker build -t {frontend_image} frontend -f frontend/frontend.dockerfile --progress={progress}",
+            echo=True,
+            pty=not WINDOWS,
+        )
+        ctx.run(f"docker push {frontend_image}", echo=True, pty=not WINDOWS)
+
+
+@task
+def deploy_gcp(
+    ctx: Context,
+    service: str = "all",
+    region: str = "europe-north1",
+    ar_repo: str = "ml-images",
+) -> None:
+    """Deploy services to GCP Cloud Run.
+
+    Args:
+        service: 'api', 'frontend', or 'all'
+        region: GCP region (default: europe-north1)
+        ar_repo: Artifact Registry repository name (default: ml-images)
+    """
+    project_id = ctx.run("gcloud config get-value project", hide=True).stdout.strip()
+
+    if service in ("api", "all"):
+        api_image = f"{region}-docker.pkg.dev/{project_id}/{ar_repo}/api-image:latest"
+        ctx.run(
+            f"gcloud run deploy production-api --image {api_image} --region {region} "
+            "--allow-unauthenticated --set-env-vars PORT=8000",
+            echo=True,
+            pty=not WINDOWS,
+        )
+
+    if service in ("frontend", "all"):
+        frontend_image = f"{region}-docker.pkg.dev/{project_id}/{ar_repo}/frontend-image:latest"
+        ctx.run(
+            f"gcloud run deploy production-frontend --image {frontend_image} --region {region} "
+            "--allow-unauthenticated --set-env-vars PORT=8501",
+            echo=True,
+            pty=not WINDOWS,
+        )
