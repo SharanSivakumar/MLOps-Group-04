@@ -39,4 +39,3 @@ The project also has a artifcat registry repo at europe-north1-docker.pkg.dev/ps
 * Ensure all functions and classes have docstrings.
 * Use Google style for docstrings.
 * Update this `AGENTS.md` file if any new tools or commands are added to the project.
-

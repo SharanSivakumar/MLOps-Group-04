@@ -17,4 +17,3 @@ fi
 
 echo "Data pull successful. Starting training..."
 exec uv run src/train.py "$@"
-

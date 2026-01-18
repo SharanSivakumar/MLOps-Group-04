@@ -1,22 +1,74 @@
+substitutions:
+  _REGION: europe-north1
+  _AR_REPO: ml-images
+
 steps:
-- name: 'gcr.io/cloud-builders/docker'
-  id: 'Build container image'
-  env:
-  - 'DOCKER_BUILDKIT=1'
-  args: [
-    'build',
-    '.',
-    '-t',
-    'europe-west1-docker.pkg.dev/$PROJECT_ID/project-registry/project-image',
-    '-f',
-    'Dockerfile'
-  ]
-- name: 'gcr.io/cloud-builders/docker'
-  id: 'Push container image'
-  args: [
-    'push',
-    'europe-west1-docker.pkg.dev/$PROJECT_ID/project-registry/project-image'
-  ]
-  
+  - id: "Build API image"
+    name: "gcr.io/cloud-builders/docker"
+    env:
+      - "DOCKER_BUILDKIT=1"
+    args:
+      - "build"
+      - "."
+      - "-t"
+      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/api-image:$SHORT_SHA"
+      - "-t"
+      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/api-image:latest"
+      - "-f"
+      - "dockerfiles/api.dockerfile"
+
+  - id: "Push API image"
+    name: "gcr.io/cloud-builders/docker"
+    args:
+      - "push"
+      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/api-image"
+
+  - id: "Build frontend image"
+    name: "gcr.io/cloud-builders/docker"
+    env:
+      - "DOCKER_BUILDKIT=1"
+    args:
+      - "build"
+      - "frontend"
+      - "-t"
+      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/frontend-image:$SHORT_SHA"
+      - "-t"
+      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/frontend-image:latest"
+      - "-f"
+      - "frontend/frontend.dockerfile"
+
+  - id: "Push frontend image"
+    name: "gcr.io/cloud-builders/docker"
+    args:
+      - "push"
+      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/frontend-image"
+
+  - id: "Deploy API to Cloud Run"
+    name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
+    entrypoint: bash
+    args:
+      - "-c"
+      - |
+        gcloud run deploy production-api \
+          --image ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/api-image:$SHORT_SHA \
+          --region ${_REGION} \
+          --platform managed \
+          --allow-unauthenticated \
+          --set-env-vars PORT=8000
+
+  - id: "Deploy frontend to Cloud Run"
+    name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
+    entrypoint: bash
+    args:
+      - "-c"
+      - |
+        gcloud run deploy production-frontend \
+          --image ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/frontend-image:$SHORT_SHA \
+          --region ${_REGION} \
+          --platform managed \
+          --allow-unauthenticated \
+          --set-env-vars PORT=8501
+
 options:
   logging: CLOUD_LOGGING_ONLY
+  machineType: N1_HIGHCPU_8
