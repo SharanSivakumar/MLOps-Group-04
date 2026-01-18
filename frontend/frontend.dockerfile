@@ -15,4 +15,3 @@ RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements_front
 
 EXPOSE 8501
 CMD ["sh", "-c", "streamlit run frontend.py --server.address=0.0.0.0 --server.port=${PORT:-8501}"]
-

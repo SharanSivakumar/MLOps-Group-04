@@ -1,7 +1,6 @@
 import streamlit as st
 import requests
 import pandas as pd
-from google.cloud import run_v2 
 
 API_URL = "https://ecg-api-579499894470.europe-north1.run.app/predict"
 
@@ -41,9 +40,7 @@ if uploaded is not None:
                 winner = df["probability"].idxmax()
 
                 def highlight_winner(row):
-                    return [
-                        "font-weight: 800; background-color: #ffe08a" if row.name == winner else ""
-                    ]
+                    return ["font-weight: 800; background-color: #ffe08a" if row.name == winner else ""]
 
                 st.subheader("Detailed values")
                 st.dataframe(df.style.apply(highlight_winner, axis=1).format("{:.6f}"))
