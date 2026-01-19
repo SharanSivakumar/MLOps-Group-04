@@ -1,33 +1,29 @@
+import io
 import random
 
+import numpy as np
 from locust import HttpUser, between, task
 
 
 class ECGInferenceUser(HttpUser):
-    """Locust user class for testing the ECG Classification API."""
-
+    
     wait_time = between(1, 3)
 
     @task(1)
     def get_root(self) -> None:
-        """Test the root endpoint."""
         self.client.get("/")
-
-    @task(1)
-    def health_check(self) -> None:
-        """Test the health check endpoint."""
-        self.client.get("/health")
 
     @task(5)
     def predict_ecg(self) -> None:
-        """Test the prediction endpoint with random ECG data."""
-        # Generate random 224x224 ECG data
-        ecg_data = [[random.uniform(-1, 1) for _ in range(224)] for _ in range(224)]
+        ecg_data = np.random.uniform(-1, 1, size=(224, 224)).astype(np.float32)
         
-        payload = {"data": ecg_data}
+        bio = io.BytesIO()
+        np.save(bio, ecg_data)
+        bio.seek(0)
+        
+        files = {"file": ("test_ecg.npy", bio, "application/octet-stream")}
         
         self.client.post(
             "/predict",
-            json=payload,
-            headers={"Content-Type": "application/json"}
+            files=files,
         )
