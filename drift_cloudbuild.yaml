@@ -11,8 +11,6 @@ steps:
       - "build"
       - "."
       - "-t"
-      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/drift-api:$SHORT_SHA"
-      - "-t"
       - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/drift-api:latest"
       - "-f"
       - "dockerfiles/drift.dockerfile"
