@@ -6,9 +6,10 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
+import pandas as pd
 import torch
-from evidently.metrics import DataDriftTable
-from evidently.report import Report
+from evidently import Report
+from evidently.metrics import ValueDrift
 from google.cloud import storage
 
 
@@ -139,45 +140,39 @@ class DriftDetector:
             print(f"Error loading production data: {e}")
             return np.array([])
 
-    def detect_drift(self, production_data: np.ndarray) -> Dict:
-        """Detect drift between reference and production data."""
+def detect_drift(self, production_data: np.ndarray) -> Dict:
+        """Detect drift using Evidently ValueDrift metrics."""
         if len(production_data) == 0:
             return {"error": "No production data available"}
-
-        # Create Evidently report
-        import pandas as pd
 
         feature_names = ["mean", "std", "min", "max", "median"]
         reference_df = pd.DataFrame(self.reference_data, columns=feature_names)
         production_df = pd.DataFrame(production_data, columns=feature_names)
 
-        # Generate drift report
-        report = Report(metrics=[DataDriftTable()])
-
+        # Create ValueDrift metrics for each feature
+        metrics = [ValueDrift(column=col) for col in feature_names]
+        
+        report = Report(metrics=metrics)
         report.run(reference_data=reference_df, current_data=production_df)
 
-        # Save report
+        # Save report as HTML
         report_path = f"reports/drift_report_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.html"
         Path("reports").mkdir(exist_ok=True)
         report.save_html(report_path)
 
-        # Extract drift metrics
+        # Extract drift results
         report_dict = report.as_dict()
-
         drift_detected = False
         drifted_features = []
 
-        # Check for drift in metrics
+        # Check each metric result for drift
         if "metrics" in report_dict:
             for metric in report_dict["metrics"]:
-                if metric.get("metric") == "DatasetDriftMetric":
-                    drift_detected = metric["result"].get("dataset_drift", False)
-                    if "drift_by_columns" in metric["result"]:
-                        drifted_features = [
-                            col
-                            for col, drift_info in metric["result"]["drift_by_columns"].items()
-                            if drift_info.get("drift_detected", False)
-                        ]
+                result = metric.get("result", {})
+                if result.get("drift_detected", False):
+                    column_name = result.get("column_name", "unknown")
+                    drifted_features.append(column_name)
+                    drift_detected = True
 
         return {
             "drift_detected": drift_detected,
