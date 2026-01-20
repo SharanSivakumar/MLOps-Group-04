@@ -27,7 +27,9 @@ antlr4-python3-runtime==4.9.3
 anyio==4.12.1
     # via
     #   httpx
+    #   litestar
     #   starlette
+    #   watchfiles
 appdirs==1.4.4
     # via iterative-telemetry
 asyncssh==2.22.0
@@ -56,6 +58,7 @@ celery==5.6.2
     #   dvc-task
 certifi==2026.1.4
     # via
+    #   evidently
     #   geventhttpclient
     #   httpcore
     #   httpx
@@ -77,7 +80,10 @@ click==8.3.1
     #   click-plugins
     #   click-repl
     #   flask
+    #   litestar
     #   mkdocs
+    #   nltk
+    #   rich-click
     #   typer
     #   uvicorn
 click-didyoumean==0.3.1
@@ -95,7 +101,9 @@ colorama==0.4.6
     #   mkdocs
     #   mkdocs-material
     #   pytest
+    #   rich-click
     #   tqdm
+    #   uvicorn
 configargparse==1.7.1
     # via locust
 configobj==5.0.9
@@ -103,9 +111,13 @@ configobj==5.0.9
 coverage==7.6.9
     # via group04
 cryptography==46.0.3
-    # via asyncssh
+    # via
+    #   asyncssh
+    #   evidently
 decorator==5.2.1
     # via gcsfs
+deprecation==2.1.0
+    # via evidently
 dictdiffer==0.9.0
     # via dvc-data
 diskcache==5.6.3
@@ -143,8 +155,14 @@ dvc-studio-client==0.22.0
     # via dvc
 dvc-task==0.40.2
     # via dvc
+dynaconf==3.2.12
+    # via evidently
 entrypoints==0.4
     # via gto
+evidently==0.7.20
+    # via group04
+faker==40.1.2
+    # via polyfactory
 fastapi==0.115.6
     # via group04
 filelock==3.20.2
@@ -175,6 +193,7 @@ fsspec==2025.12.0
     #   dvc-data
     #   dvc-http
     #   dvc-objects
+    #   evidently
     #   gcsfs
     #   pytorch-lightning
     #   scmrepo
@@ -259,8 +278,12 @@ h11==0.16.0
     #   wsproto
 httpcore==1.0.9
     # via httpx
+httptools==0.7.1
+    # via uvicorn
 httpx==0.28.1
-    # via group04
+    # via
+    #   group04
+    #   litestar
 hydra-core==1.3.2
     # via dvc
 identify==2.6.15
@@ -275,7 +298,9 @@ iniconfig==2.3.0
     # via pytest
 invoke==2.2.1
 iterative-telemetry==0.0.10
-    # via dvc
+    # via
+    #   dvc
+    #   evidently
 itsdangerous==2.2.0
     # via flask
 jinja2==3.1.6
@@ -286,7 +311,9 @@ jinja2==3.1.6
     #   mkdocstrings
     #   torch
 joblib==1.5.3
-    # via scikit-learn
+    # via
+    #   nltk
+    #   scikit-learn
 kombu==5.6.2
     # via
     #   celery
@@ -296,6 +323,10 @@ lightning-utilities==0.15.2
     # via
     #   pytorch-lightning
     #   torchmetrics
+litestar==2.19.0
+    # via evidently
+litestar-htmx==0.5.0
+    # via litestar
 locust==2.43.1
     # via group04
 loguru==0.7.3
@@ -339,28 +370,40 @@ mkdocs-get-deps==0.2.0
 mkdocs-material==9.4.6
 mkdocs-material-extensions==1.3.1
     # via mkdocs-material
-mkdocstrings==1.0.1
+mkdocstrings==1.0.0
     # via mkdocstrings-python
 mkdocstrings-python==2.0.1
 mpmath==1.3.0
     # via sympy
 msgpack==1.1.2
     # via locust
+msgspec==0.20.0
+    # via litestar
 multidict==6.7.0
     # via
     #   aiohttp
+    #   litestar
     #   yarl
+multipart==1.3.0
+    # via litestar
+mypy-extensions==1.1.0
+    # via typing-inspect
 networkx==3.6.1
     # via
     #   dvc
     #   torch
+nltk==3.9.2
+    # via evidently
 nodeenv==1.10.0
     # via pre-commit
 numpy==2.4.1
     # via
+    #   evidently
     #   pandas
+    #   patsy
     #   scikit-learn
     #   scipy
+    #   statsmodels
     #   tensorboard
     #   torchmetrics
     #   torchvision
@@ -370,30 +413,40 @@ omegaconf==2.3.0
     # via
     #   dvc
     #   hydra-core
+opentelemetry-proto==1.39.1
+    # via evidently
 orjson==3.11.5 ; implementation_name == 'cpython'
     # via
     #   dvc-data
     #   sqltrie
 packaging==25.0
     # via
+    #   deprecation
     #   dvc
     #   hydra-core
     #   kombu
     #   lightning-utilities
     #   mkdocs
+    #   plotly
     #   pytest
     #   pytorch-lightning
+    #   statsmodels
     #   tensorboard
     #   torchmetrics
 paginate==0.5.7
     # via mkdocs-material
 pandas==2.3.3
-    # via group04
+    # via
+    #   evidently
+    #   group04
+    #   statsmodels
 pathspec==0.12.1
     # via
     #   dvc
     #   mkdocs
     #   scmrepo
+patsy==1.0.2
+    # via statsmodels
 pillow==12.1.0
     # via
     #   tensorboard
@@ -405,8 +458,12 @@ platformdirs==4.5.1
     #   dvc
     #   mkdocs-get-deps
     #   virtualenv
+plotly==5.24.1
+    # via evidently
 pluggy==1.6.0
     # via pytest
+polyfactory==3.2.0
+    # via litestar
 pre-commit==4.1.0
 prompt-toolkit==3.0.52
     # via click-repl
@@ -425,6 +482,7 @@ protobuf==6.33.3
     #   googleapis-common-protos
     #   grpc-google-iam-v1
     #   grpcio-status
+    #   opentelemetry-proto
     #   proto-plus
     #   tensorboard
 psutil==7.2.1
@@ -432,6 +490,8 @@ psutil==7.2.1
     #   dvc
     #   flufl-lock
     #   locust
+pyarrow==23.0.0
+    # via pandas
 pyasn1==0.6.1
     # via
     #   pyasn1-modules
@@ -442,6 +502,7 @@ pycparser==2.23 ; implementation_name != 'PyPy'
     # via cffi
 pydantic==2.12.5
     # via
+    #   evidently
     #   fastapi
     #   group04
     #   gto
@@ -483,7 +544,9 @@ python-dateutil==2.9.0.post0
     #   ghp-import
     #   pandas
 python-dotenv==1.2.1
-    # via pydantic-settings
+    # via
+    #   pydantic-settings
+    #   uvicorn
 python-engineio==4.13.0
     # via
     #   locust
@@ -502,6 +565,8 @@ pywin32==311 ; sys_platform == 'win32'
     #   locust
 pyyaml==6.0.3
     # via
+    #   evidently
+    #   litestar
     #   mkdocs
     #   mkdocs-get-deps
     #   omegaconf
@@ -509,16 +574,20 @@ pyyaml==6.0.3
     #   pymdown-extensions
     #   pytorch-lightning
     #   pyyaml-env-tag
+    #   uvicorn
 pyyaml-env-tag==1.1
     # via mkdocs
 pyzmq==27.1.0
     # via locust
 regex==2025.11.3
-    # via mkdocs-material
+    # via
+    #   mkdocs-material
+    #   nltk
 requests==2.32.5
     # via
     #   dvc
     #   dvc-studio-client
+    #   evidently
     #   gcsfs
     #   google-api-core
     #   google-cloud-storage
@@ -532,8 +601,13 @@ requests-oauthlib==2.0.0
 rich==14.2.0
     # via
     #   dvc
+    #   evidently
     #   gto
+    #   litestar
+    #   rich-click
     #   typer
+rich-click==1.9.5
+    # via litestar
 rsa==4.9.1
     # via google-auth
 ruamel-yaml==0.19.1
@@ -542,9 +616,14 @@ ruamel-yaml==0.19.1
     #   gto
 ruff==0.14.13
 scikit-learn==1.8.0
-    # via group04
+    # via
+    #   evidently
+    #   group04
 scipy==1.16.3
-    # via scikit-learn
+    # via
+    #   evidently
+    #   scikit-learn
+    #   statsmodels
 scmrepo==3.6.1
     # via
     #   dvc
@@ -573,16 +652,22 @@ six==1.17.0
     #   python-dateutil
 smmap==5.0.2
     # via gitdb
+sniffio==1.3.1
+    # via litestar
 sqltrie==0.11.2
     # via dvc-data
 starlette==0.41.3
     # via fastapi
+statsmodels==0.14.6
+    # via evidently
 sympy==1.13.1
     # via torch
 tabulate==0.9.0
     # via
     #   dvc
     #   gto
+tenacity==9.1.2
+    # via plotly
 tensorboard==2.20.0
     # via group04
 tensorboard-data-server==0.7.2
@@ -616,10 +701,12 @@ tqdm==4.67.1
     #   dvc
     #   dvc-data
     #   fsspec
+    #   nltk
     #   pytorch-lightning
     #   scmrepo
 typer==0.21.1
     # via
+    #   evidently
     #   group04
     #   gto
 typing-extensions==4.15.0
@@ -630,30 +717,45 @@ typing-extensions==4.15.0
     #   fastapi
     #   grpcio
     #   lightning-utilities
+    #   litestar
+    #   polyfactory
     #   pydantic
     #   pydantic-core
     #   pytorch-lightning
     #   torch
     #   typer
+    #   typing-inspect
     #   typing-inspection
+typing-inspect==0.9.0
+    # via evidently
 typing-inspection==0.4.2
     # via
     #   pydantic
     #   pydantic-settings
 tzdata==2025.3
     # via
+    #   faker
     #   kombu
     #   pandas
     #   tzlocal
 tzlocal==5.3.1
     # via celery
+ujson==5.11.0
+    # via evidently
 urllib3==2.6.3
     # via
     #   dulwich
+    #   evidently
     #   geventhttpclient
     #   requests
+uuid6==2025.0.1
+    # via evidently
 uvicorn==0.40.0
-    # via group04
+    # via
+    #   evidently
+    #   group04
+uvloop==0.22.1 ; platform_python_implementation != 'PyPy' and sys_platform != 'cygwin' and sys_platform != 'win32'
+    # via uvicorn
 vine==5.1.0
     # via
     #   amqp
@@ -666,11 +768,17 @@ voluptuous==0.16.0
     #   dvc
     #   dvc-studio-client
 watchdog==6.0.0
-    # via mkdocs
+    # via
+    #   evidently
+    #   mkdocs
+watchfiles==1.1.1
+    # via uvicorn
 wcwidth==0.2.14
     # via prompt-toolkit
 websocket-client==1.9.0
     # via python-socketio
+websockets==16.0
+    # via uvicorn
 werkzeug==3.1.5
     # via
     #   flask

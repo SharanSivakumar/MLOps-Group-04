@@ -7,8 +7,7 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
-from evidently import ColumnMapping
-from evidently.metric_preset import DataDriftPreset, DataQualityPreset
+from evidently.metrics import DataDriftTable
 from evidently.report import Report
 from google.cloud import storage
 
@@ -153,7 +152,7 @@ class DriftDetector:
         production_df = pd.DataFrame(production_data, columns=feature_names)
 
         # Generate drift report
-        report = Report(metrics=[DataDriftPreset(), DataQualityPreset()])
+        report = Report(metrics=[DataDriftTable()])
 
         report.run(reference_data=reference_df, current_data=production_df)
 
