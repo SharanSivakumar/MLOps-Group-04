@@ -21,3 +21,4 @@ plugins:
 
 nav:
   - Home: index.md
+  - Drift Detection: drift_detection.md

@@ -29,7 +29,7 @@ def test(ctx: Context) -> None:
 
 @task
 def docker_build(ctx: Context, progress: str = "plain", target: str = "all") -> None:
-    """Build docker images (target: 'api', 'frontend', 'all')."""
+    """Build docker images (target: 'train', 'api', 'frontend', 'drift', 'all')."""
     if target in ("train", "all"):
         ctx.run(
             f"docker build -t train:latest . -f dockerfiles/train.dockerfile --progress={progress}",
@@ -45,6 +45,12 @@ def docker_build(ctx: Context, progress: str = "plain", target: str = "all") -> 
     if target in ("frontend", "all"):
         ctx.run(
             f"docker build -t frontend:latest frontend -f frontend/frontend.dockerfile --progress={progress}",
+            echo=True,
+            pty=not WINDOWS,
+        )
+    if target in ("drift", "all"):
+        ctx.run(
+            f"docker build -t drift:latest . -f dockerfiles/drift.dockerfile --progress={progress}",
             echo=True,
             pty=not WINDOWS,
         )
@@ -126,3 +132,23 @@ def deploy_gcp(
             echo=True,
             pty=not WINDOWS,
         )
+
+
+# Drift Detection commands
+@task
+def check_drift(ctx: Context) -> None:
+    """Run drift detection locally."""
+    ctx.run("uv run python -m src.drift_detection", echo=True, pty=not WINDOWS)
+
+
+@task
+def deploy_drift_detection(ctx: Context) -> None:
+    """Deploy drift detection service to GCP."""
+    ctx.run("gcloud builds submit --config=drift_cloudbuild.yaml", echo=True, pty=not WINDOWS)
+
+
+@task
+def setup_drift_scheduler(ctx: Context) -> None:
+    """Setup Cloud Scheduler for automated drift detection."""
+    project_id = ctx.run("gcloud config get-value project", hide=True).stdout.strip()
+    ctx.run(f"uv run python scripts/setup_drift_scheduler.py {project_id}", echo=True, pty=not WINDOWS)
