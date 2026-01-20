@@ -43,31 +43,6 @@ steps:
       - "push"
       - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/frontend-image"
 
-  - id: "Deploy API to Cloud Run"
-    name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
-    entrypoint: bash
-    args:
-      - "-c"
-      - |
-        gcloud run deploy production-api \
-          --image ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/api-image:$SHORT_SHA \
-          --region ${_REGION} \
-          --platform managed \
-          --allow-unauthenticated \
-          --set-env-vars PORT=8000
-
-  - id: "Deploy frontend to Cloud Run"
-    name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
-    entrypoint: bash
-    args:
-      - "-c"
-      - |
-        gcloud run deploy production-frontend \
-          --image ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/frontend-image:$SHORT_SHA \
-          --region ${_REGION} \
-          --platform managed \
-          --allow-unauthenticated \
-          --set-env-vars PORT=8501
 
 options:
   logging: CLOUD_LOGGING_ONLY
