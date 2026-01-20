@@ -1,0 +1,26 @@
+{
+  "os":  "Linux-6.6.87.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "python":  "CPython 3.13.11",
+  "startedAt":  "2026-01-20T18:19:13.283336Z",
+  "program":  "-m src.train",
+  "git":  {
+    "remote":  "https://github.com/SharanSivakumar/MLOps-Group-04.git",
+    "commit":  "fe26e3c8857004234c197b5b654d15f5ae5f175a"
+  },
+  "email":  "s194408@dtu.dk",
+  "root":  ".",
+  "host":  "DTU-5CG5081JZZ",
+  "executable":  "/home/xiaopeng/miniconda3/envs/my_env/bin/python",
+  "cpu_count":  7,
+  "cpu_count_logical":  14,
+  "disk":  {
+    "/":  {
+      "total":  "1081101176832",
+      "used":  "22579601408"
+    }
+  },
+  "memory":  {
+    "total":  "8026546176"
+  },
+  "writerId":  "dk3qm3axpwvjqkns1dhqgj1mavaio191"
+}

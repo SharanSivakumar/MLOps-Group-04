@@ -1,8 +1,9 @@
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
-from pytorch_lightning.loggers import TensorBoardLogger
+from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.profilers import PyTorchProfiler
 from loguru import logger
+import wandb
 
 from src.data import ECGDataModule
 from src.model import ECGClassifier
@@ -54,11 +55,24 @@ def main(config):
         sort_by_key=config.profiler.sort_by_key,
     )
 
+    # Weights & Biases Logger
+    wandb_logger = WandbLogger(
+        project=config.logging.get('project', 'ecg-classification'),
+        name=config.logging.get('name', 'ecg-experiment'),
+        config={
+            'batch_size': config.data.batch_size,
+            'lr': config.model.lr,
+            'max_epochs': config.training.max_epochs,
+            'seed': config.seed,
+            'num_classes': config.model.num_classes
+        }
+    )
+    
     # Trainer
     trainer = Trainer(
         max_epochs=config.training.max_epochs,
         callbacks=[checkpoint_callback, early_stopping],
-        logger=TensorBoardLogger(config.logging.log_dir, name=config.logging.name),
+        logger=wandb_logger,
         accelerator="auto",
         devices="auto",
         profiler=profiler,
@@ -71,12 +85,40 @@ def main(config):
 
     logger.info("Starting model evaluation on test set")
     # Test
-    trainer.test(model, data_module)
+    test_results = trainer.test(model, data_module)
     logger.info("Testing completed")
+    
+    # Log model as W&B artifact
+    logger.info("Logging model as W&B artifact")
+    best_model_path = checkpoint_callback.best_model_path
+    if best_model_path:
+        artifact = wandb.Artifact(
+            name=f"{config.logging.get('name', 'ecg-model')}",
+            type="model",
+            description="ECG classification model trained with PyTorch Lightning",
+            metadata={
+                'test_results': test_results[0] if test_results else {},
+                'best_checkpoint': best_model_path
+            }
+        )
+        artifact.add_file(best_model_path)
+        wandb_logger.experiment.log_artifact(artifact)
+        logger.success(f"Model artifact logged: {best_model_path}")
+    
+    wandb.finish()
 
 if __name__ == "__main__":
     # Load configuration from YAML file
     config = OmegaConf.load("config.yaml")
+    
+    # Allow W&B sweep to override config parameters
+    # W&B passes parameters as a dict in wandb.config when running a sweep
+    if wandb.run is not None:
+        # Running inside a W&B sweep
+        logger.info("Running with W&B sweep - merging sweep parameters")
+        sweep_config = OmegaConf.create(dict(wandb.config))
+        config = OmegaConf.merge(config, sweep_config)
+        logger.info(f"Merged config: {OmegaConf.to_yaml(config)}")
     
     try:
         main(config)
