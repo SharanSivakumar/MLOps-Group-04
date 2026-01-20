@@ -13,6 +13,6 @@ def test_model_architecture():
     output = model(dummy_input)
 
     expected_output_shape = (batch_size, 3)
-    assert (
-        output.shape == expected_output_shape
-    ), f"Expected output shape {expected_output_shape}, but got {output.shape}"
+    assert output.shape == expected_output_shape, (
+        f"Expected output shape {expected_output_shape}, but got {output.shape}"
+    )
