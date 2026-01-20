@@ -19,6 +19,12 @@ device = None
 drift_logger = None
 
 
+class _DummyECGModel(torch.nn.Module):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:  # noqa: D401
+        batch = x.shape[0]
+        return torch.zeros((batch, 3), dtype=torch.float32, device=x.device)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global model, device, drift_logger
@@ -28,6 +34,14 @@ async def lifespan(app: FastAPI):
     try:
         # If checkpoint not present locally, try to download from GCS
         if not os.path.exists(checkpoint_path):
+            if os.environ.get("DISABLE_MODEL_DOWNLOAD") == "1":
+                device = torch.device("cpu")
+                model = _DummyECGModel()
+                model.to(device)
+                model.eval()
+                yield
+                return
+
             gcs_uri = os.environ.get(
                 "MODEL_GCS_URI",
                 "gs://psychic-iridium-484208-c3-mlops-data/models/ecg-epoch=01-val_loss=0.11.ckpt",
@@ -46,6 +60,13 @@ async def lifespan(app: FastAPI):
                     print("Download complete.")
                 except Exception as e:
                     print(f"Failed to download model from {gcs_uri}: {e}")
+                    if os.environ.get("CI") == "true" or os.environ.get("DISABLE_MODEL_DOWNLOAD") == "1":
+                        device = torch.device("cpu")
+                        model = _DummyECGModel()
+                        model.to(device)
+                        model.eval()
+                        yield
+                        return
                     raise
             else:
                 raise RuntimeError("MODEL_GCS_URI must be a gs:// URI when checkpoint is missing")
