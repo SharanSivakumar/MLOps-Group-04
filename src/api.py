@@ -11,15 +11,17 @@ import os
 from google.cloud import storage
 
 from src.model import ECGClassifier
+from src.drift_detection import DriftLogger
 
 # Global variables for model and device
 model = None
 device = None
+drift_logger = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global model, device
+    global model, device, drift_logger
 
     checkpoint_path = "checkpoints/ecg-epoch=01-val_loss=0.11.ckpt"
 
@@ -57,7 +59,16 @@ async def lifespan(app: FastAPI):
         model.to(device)
         model.eval()
         print("Model loaded successfully.")
+
+        # Initialize drift logger
+        drift_logger = DriftLogger()
+        print("Drift logger initialized.")
+
         yield
+
+        # Flush any remaining logs before shutdown
+        if drift_logger:
+            drift_logger.flush()
     except Exception as e:
         print(f"Error loading model: {e}")
         raise RuntimeError(f"Failed to load model from {checkpoint_path}")
@@ -130,6 +141,12 @@ async def predict(file: UploadFile = File(...)) -> JSONResponse:
         with torch.no_grad():
             logits = model(tensor_data)
             probs = torch.softmax(logits, dim=1)
+        # Log prediction for drift monitoring
+        if drift_logger:
+            drift_logger.log_prediction(
+                input_data=data, prediction=predicted_class, probabilities=probs[0].cpu().numpy()
+            )
+
             predicted_class = torch.argmax(probs, dim=1).item()
 
         classes = ["AF", "Noise", "NSR"]
