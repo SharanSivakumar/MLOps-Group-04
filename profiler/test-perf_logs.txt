@@ -106,3 +106,30 @@ enumerate(DataLoader)#_MultiProcessingDataLoaderIter...         9.00%      25.87
 [pl][module]torch.nn.modules.container.Sequential: m...         0.28%     803.118us         6.37%      18.307ms       6.102ms             3
 -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------
 Self CPU time total: 287.374ms
+TEST Profiler Report
+Profile stats for: records
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                                                   Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls  
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                                          ProfilerStep*         0.37%      10.481ms       100.00%        2.842s     947.338ms             3  
+[pl][profile][Strategy]SingleDeviceStrategy.test_ste...         0.71%      20.245ms        98.18%        2.790s     930.079ms             3  
+[pl][module]torchvision.models.efficientnet.Efficien...         0.07%       1.931ms        96.24%        2.735s     911.728ms             3  
+[pl][module]torch.nn.modules.container.Sequential: m...         0.12%       3.472ms        95.90%        2.726s     908.534ms             3  
+                                           aten::conv2d         0.19%       5.505ms        51.58%        1.466s       3.054ms           480  
+                                      aten::convolution         0.28%       8.037ms        51.39%        1.460s       3.043ms           480  
+                                     aten::_convolution         0.50%      14.249ms        51.11%        1.452s       3.026ms           480  
+                               aten::mkldnn_convolution        47.94%        1.363s        50.60%        1.438s       2.996ms           480  
+[pl][module]torch.nn.modules.container.Sequential: m...         0.05%       1.297ms        18.63%     529.465ms     176.488ms             3  
+[pl][module]torch.nn.modules.container.Sequential: m...         0.09%       2.550ms        17.99%     511.268ms     170.423ms             3  
+[pl][module]torch.nn.modules.container.Sequential: m...         0.08%       2.382ms        17.02%     483.701ms     161.234ms             3  
+[pl][module]torch.nn.modules.container.Sequential: m...         0.06%       1.741ms        14.93%     424.223ms     141.408ms             3  
+[pl][module]torch.nn.modules.container.Sequential: m...         0.05%       1.536ms        12.64%     359.307ms     119.769ms             3  
+                                       aten::batch_norm         0.16%       4.482ms         8.85%     251.577ms     873.531us           288  
+                           aten::_batch_norm_impl_index         0.36%      10.105ms         8.69%     247.095ms     857.970us           288  
+                                            aten::silu_         8.69%     246.908ms         8.69%     246.908ms     857.320us           288  
+                                aten::native_batch_norm         7.00%     198.920ms         8.23%     233.915ms     812.206us           288  
+[pl][module]torch.nn.modules.container.Sequential: m...         0.05%       1.309ms         6.61%     187.901ms      62.634ms             3  
+[pl][module]torchvision.models.efficientnet.MBConv: ...         0.01%     318.948us         6.01%     170.809ms      56.936ms             3  
+[pl][module]torch.nn.modules.container.Sequential: m...         0.07%       2.103ms         6.00%     170.490ms      56.830ms             3  
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  
+Self CPU time total: 2.842s
