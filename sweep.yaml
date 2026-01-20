@@ -1,4 +1,9 @@
 program: src/train.py
+command:
+  - ${env}
+  - python
+  - ${program}
+  - ${args_no_hyphens}
 name: ecg-classification-sweep
 project: ecg-classification
 metric:
@@ -11,9 +16,9 @@ parameters:
         max: 0.01
         distribution: log_uniform_values
     data.batch_size:
-        values: [16, 32, 64, 128]
+        values: [8, 16, 32]
     training.max_epochs:
-        values: [10, 20, 30, 50]
+        values: [5, 10, 20]
     seed:
-        values: [42, 123, 456, 789]
+        values: [2026, 11111, 0]
 run_cap: 20

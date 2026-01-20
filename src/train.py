@@ -1,3 +1,13 @@
+import sys
+from pathlib import Path
+import hydra
+from omegaconf import DictConfig
+
+# Add project root to Python path for imports
+project_root = Path(__file__).parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from pytorch_lightning.loggers import WandbLogger
@@ -7,10 +17,9 @@ import wandb
 
 from src.data import ECGDataModule
 from src.model import ECGClassifier
-from omegaconf import OmegaConf
 
-
-def main(config):
+@hydra.main(version_base=None, config_path="..", config_name="config")
+def main(config: DictConfig):
     seed_everything(config.seed)
 
     logger.info("Starting ECG classification training")
@@ -108,21 +117,4 @@ def main(config):
     wandb.finish()
 
 if __name__ == "__main__":
-    # Load configuration from YAML file
-    config = OmegaConf.load("config.yaml")
-    
-    # Allow W&B sweep to override config parameters
-    # W&B passes parameters as a dict in wandb.config when running a sweep
-    if wandb.run is not None:
-        # Running inside a W&B sweep
-        logger.info("Running with W&B sweep - merging sweep parameters")
-        sweep_config = OmegaConf.create(dict(wandb.config))
-        config = OmegaConf.merge(config, sweep_config)
-        logger.info(f"Merged config: {OmegaConf.to_yaml(config)}")
-    
-    try:
-        main(config)
-        logger.success("Training pipeline completed successfully")
-    except Exception as e:
-        logger.error(f"Training failed with error: {e}")
-        raise
+    main()
