@@ -31,7 +31,7 @@ dependencies = [
     "pytorch-lightning",
     "torchmetrics",
     "scikit-learn",
-    "torchvision==0.18.1",
+    "torchvision==0.21.0",
     "tensorboard>=2.20.0",
     "pytest>=8.3.4",
     "coverage>=7.6.9",

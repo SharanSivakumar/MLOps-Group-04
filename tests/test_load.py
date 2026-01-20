@@ -3,6 +3,11 @@ import pandas as pd
 import pytest
 import os
 
+
+@pytest.mark.skipif(
+    os.environ.get("RUN_PERF_TESTS") != "1",
+    reason="Performance test is opt-in. Set RUN_PERF_TESTS=1 to run against the deployed endpoint.",
+)
 def test_ecg_performance():
     # Define your parameters
     locust_file = "tests/performancetests/locustfile.py"
@@ -14,16 +19,21 @@ def test_ecg_performance():
 
     command = [
         "locust",
-        "-f", locust_file,
+        "-f",
+        locust_file,
         "--headless",
-        "--users", str(users),
-        "--spawn-rate", str(spawn_rate),
-        "--run-time", run_time,
-        "--host", host,
-        "--csv", csv_prefix,
-        "--only-summary"
+        "--users",
+        str(users),
+        "--spawn-rate",
+        str(spawn_rate),
+        "--run-time",
+        run_time,
+        "--host",
+        host,
+        "--csv",
+        csv_prefix,
+        "--only-summary",
     ]
-
 
     result = subprocess.run(command, capture_output=True, text=True)
     assert result.returncode == 0, f"Locust failed: {result.stderr}"
@@ -31,7 +41,7 @@ def test_ecg_performance():
     df = pd.read_csv(f"{csv_prefix}_stats.csv")
     agg_stats = df[df["Name"] == "Aggregated"]
     p95_latency = agg_stats["95%"].values[0]
-    
+
     assert p95_latency < 1200, f"Latency too high: {p95_latency}ms"
 
     for suffix in ["_stats.csv", "_stats_history.csv", "_failures.csv", "_exceptions.csv"]:

@@ -1,5 +1,4 @@
 import io
-import random
 
 import numpy as np
 from locust import HttpUser, between, task
@@ -18,9 +17,9 @@ class ECGInferenceUser(HttpUser):
         bio = io.BytesIO()
         np.save(bio, ecg_data)
         bio.seek(0)
-        
+
         files = {"file": ("test_ecg.npy", bio, "application/octet-stream")}
-        
+
         self.client.post(
             "/predict",
             files=files,
