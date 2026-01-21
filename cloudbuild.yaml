@@ -11,8 +11,6 @@ steps:
       - "build"
       - "."
       - "-t"
-      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/api-image:$SHORT_SHA"
-      - "-t"
       - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/api-image:latest"
       - "-f"
       - "dockerfiles/api.dockerfile"
@@ -30,8 +28,6 @@ steps:
     args:
       - "build"
       - "frontend"
-      - "-t"
-      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/frontend-image:$SHORT_SHA"
       - "-t"
       - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/frontend-image:latest"
       - "-f"
