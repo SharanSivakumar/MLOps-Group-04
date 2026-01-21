@@ -7,7 +7,7 @@ COPY uv.lock pyproject.toml README.md ./
 RUN uv sync --frozen --no-install-project
 
 COPY src/ ./src/
-
+COPY drift/ ./drift/
 RUN uv sync --frozen
 
 ENV PORT=8000
