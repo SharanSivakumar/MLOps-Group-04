@@ -1,10 +1,15 @@
 """Drift Detection API - Deploy as separate Cloud Run service."""
 
+import anyio
 from datetime import datetime
 from typing import Dict
 
+import pandas as pd
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
+from evidently import Report
+from evidently.presets import DataDriftPreset
 
 from drift_detection import DriftDetector
 
@@ -15,6 +20,35 @@ app = FastAPI(
 )
 
 detector = DriftDetector()
+
+
+def load_training_data() -> pd.DataFrame:
+    """Load training data as DataFrame for drift analysis."""
+    reference_data = detector._load_reference_data()
+    feature_names = ["mean", "std", "min", "max", "median"]
+    return pd.DataFrame(reference_data, columns=feature_names)
+
+
+def load_latest_files(bucket_name: str, n: int = 5) -> pd.DataFrame:
+    """Load the latest n files from GCS and return as DataFrame."""
+    production_data = detector.load_production_data(bucket_name)
+    if len(production_data) == 0:
+        return pd.DataFrame(columns=["mean", "std", "min", "max", "median"])
+    
+    feature_names = ["mean", "std", "min", "max", "median"]
+    production_df = pd.DataFrame(production_data, columns=feature_names)
+    
+    if len(production_df) > n * 100:
+        production_df = production_df.tail(n * 100)
+    
+    return production_df
+
+
+def run_analysis(reference_data: pd.DataFrame, current_data: pd.DataFrame) -> None:
+    """Run the analysis and return the report."""
+    text_overview_report = Report(metrics=[DataDriftPreset()])
+    snapshot = text_overview_report.run(reference_data=reference_data, current_data=current_data)
+    snapshot.save_html("monitoring.html")
 
 
 class DriftCheckResponse(BaseModel):
@@ -73,6 +107,28 @@ async def drift_status() -> Dict:
         "timestamp": datetime.utcnow().isoformat(),
         "reference_data": "data/processed/train.pt",
     }
+
+
+@app.get("/report", response_class=HTMLResponse)
+async def get_report(n: int = 5, bucket_name: str = "psychic-iridium-484208-c3-mlops-data"):
+    """Generate and return the report."""
+    try:
+        training_data = load_training_data()
+        prediction_data = load_latest_files(bucket_name, n=n)
+        
+        if len(prediction_data) == 0:
+            raise HTTPException(status_code=404, detail="No production data found in GCS")
+        
+        run_analysis(training_data, prediction_data)
+        
+        async with await anyio.open_file("monitoring.html", encoding="utf-8") as f:
+            html_content = await f.read()
+        
+        return HTMLResponse(content=html_content, status_code=200)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Report file not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Report generation failed: {str(e)}")
 
 
 if __name__ == "__main__":
