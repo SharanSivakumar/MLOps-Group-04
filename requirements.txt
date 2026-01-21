@@ -619,7 +619,7 @@ scikit-learn==1.8.0
     # via
     #   evidently
     #   group04
-scipy==1.16.3
+scipy==1.17.0
     # via
     #   evidently
     #   scikit-learn
