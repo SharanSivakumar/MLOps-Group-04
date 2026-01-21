@@ -24,6 +24,8 @@ checkpoints/**
 !checkpoints/.gitkeep
 profiler/*.json
 
+outputs/**
+!outputs/.gitkeep
 
 lightning_logs/**
 !lightning_logs/.gitkeep
