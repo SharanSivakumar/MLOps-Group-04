@@ -22,22 +22,22 @@ steps:
       - "--all-tags"
       - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/drift-api"
 
-  - id: "Deploy drift API to Cloud Run"
-    name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
-    entrypoint: bash
-    args:
-      - "-c"
-      - |
-        gcloud run deploy drift-detection-api \
-          --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/drift-api:latest \
-          --region=${_REGION} \
-          --platform=managed \
-          --allow-unauthenticated \
-          --memory=2Gi \
-          --cpu=2 \
-          --timeout=600 \
-          --max-instances=5 \
-          --service-account=$PROJECT_NUMBER-compute@developer.gserviceaccount.com
+#  - id: "Deploy drift API to Cloud Run"
+#    name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
+#    entrypoint: bash
+#    args:
+#      - "-c"
+#      - |
+#        gcloud run deploy drift-detection-api \
+#          --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/drift-api:latest \
+#          --region=${_REGION} \
+#          --platform=managed \
+#          --allow-unauthenticated \
+#          --memory=2Gi \
+#          --cpu=2 \
+#          --timeout=600 \
+#          --max-instances=5 \
+#          --service-account=$PROJECT_NUMBER-compute@developer.gserviceaccount.com
 
 options:
   logging: CLOUD_LOGGING_ONLY

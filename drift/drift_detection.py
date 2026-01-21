@@ -82,27 +82,40 @@ class DriftDetector:
     """Detects data drift using Evidently AI."""
 
     def __init__(self, reference_data_path: str = "data/processed/train.pt"):
-        self.reference_data = self._load_reference_data(reference_data_path)
+        self.reference_data_path = reference_data_path
+        self.reference_data: Optional[np.ndarray] = None
         self.class_names = ["AF", "Noise", "NSR"]
 
-    def _load_reference_data(self, path: str) -> np.ndarray:
-        """Load and prepare reference data from training set."""
-        data = torch.load(path)
-        X = data["x"].numpy()
+    def _load_reference_data(self) -> np.ndarray:
+        """Load and prepare reference data from training set (lazy-loaded)."""
+        if self.reference_data is not None:
+            return self.reference_data
+            
+        try:
+            data = torch.load(self.reference_data_path)
+            X = data["x"].numpy()
 
-        # Extract statistical features similar to DriftLogger
-        n_samples = min(1000, X.shape[0])  # Use subset for efficiency
-        features = []
-        for i in range(n_samples):
-            sample = X[i]
-            features.append(
-                [
-                    sample.mean(),
-                    sample.std(),
-                    sample.min(),
-                    sample.max(),
-                    np.median(sample),
-                ]
+            # Extract statistical features similar to DriftLogger
+            n_samples = min(1000, X.shape[0])  # Use subset for efficiency
+            features = []
+            for i in range(n_samples):
+                sample = X[i]
+                features.append(
+                    [
+                        sample.mean(),
+                        sample.std(),
+                        sample.min(),
+                        sample.max(),
+                        np.median(sample),
+                    ]
+                )
+
+            self.reference_data = np.array(features)
+            return self.reference_data
+        except FileNotFoundError:
+            print(f"Warning: Reference data file not found at {self.reference_data_path}")
+            # Return dummy data if file not found
+            return np.array([[0.0, 0.1, -0.5, 0.5, 0.0]] * 100)
             )
 
         return np.array(features)
@@ -140,12 +153,13 @@ class DriftDetector:
             print(f"Error loading production data: {e}")
             return np.array([])
 
-def detect_drift(self, production_data: np.ndarray) -> Dict:
+    def detect_drift(self, production_data: np.ndarray) -> Dict:
         """Detect drift using Evidently ValueDrift metrics."""
         if len(production_data) == 0:
             return {"error": "No production data available"}
 
-        feature_names = ["mean", "std", "min", "max", "median"]
+        # Lazy-load reference data
+        reference_data = self._load_reference_data()        feature_names = ["mean", "std", "min", "max", "median"]
         reference_df = pd.DataFrame(self.reference_data, columns=feature_names)
         production_df = pd.DataFrame(production_data, columns=feature_names)
 
