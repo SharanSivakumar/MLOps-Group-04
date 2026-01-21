@@ -6,7 +6,7 @@ from typing import Dict
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-from src.drift_detection import DriftDetector
+from drift_detection import DriftDetector
 
 app = FastAPI(
     title="ECG Drift Detection API",

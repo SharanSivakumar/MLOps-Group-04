@@ -116,7 +116,7 @@ class DriftDetector:
             print(f"Warning: Reference data file not found at {self.reference_data_path}")
             # Return dummy data if file not found
             return np.array([[0.0, 0.1, -0.5, 0.5, 0.0]] * 100)
-            )
+            
 
         return np.array(features)
 
@@ -159,7 +159,8 @@ class DriftDetector:
             return {"error": "No production data available"}
 
         # Lazy-load reference data
-        reference_data = self._load_reference_data()        feature_names = ["mean", "std", "min", "max", "median"]
+        reference_data = self._load_reference_data()        
+        feature_names = ["mean", "std", "min", "max", "median"]
         reference_df = pd.DataFrame(self.reference_data, columns=feature_names)
         production_df = pd.DataFrame(production_data, columns=feature_names)
 
