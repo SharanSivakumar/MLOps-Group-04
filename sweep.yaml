@@ -16,7 +16,7 @@ parameters:
         max: 0.01
         distribution: log_uniform_values
     data.batch_size:
-        values: [8, 16, 32]
+        values: [2, 4, 8]
     training.max_epochs:
         values: [5, 10, 20]
     seed:

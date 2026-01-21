@@ -1,0 +1,4 @@
+- data.batch_size=8
+- model.lr=0.005479789717126964
+- seed=0
+- training.max_epochs=5

@@ -1,0 +1,10 @@
+wandb_version: 1
+
+data.batch_size:
+  value: 2
+model.lr:
+  value: 0.00043007066049519695
+seed:
+  value: 2026
+training.max_epochs:
+  value: 10
