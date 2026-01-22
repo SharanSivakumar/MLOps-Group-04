@@ -76,7 +76,7 @@ def setup_drift_monitoring(project_id: str, region: str = "europe-north1"):
     try:
         subprocess.run(scheduler_commands[1], check=True)
         print("✓ Cloud Scheduler job 'drift-check-daily' created successfully")
-        print(f"  Schedule: Daily at 2 AM UTC")
+        print("  Schedule: Daily at 2 AM UTC")
         print(f"  Target: {drift_api_url}/check_drift")
     except subprocess.CalledProcessError as e:
         print(f"Error creating scheduler job: {e}")

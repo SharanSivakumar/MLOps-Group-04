@@ -1,9 +1,7 @@
-"""Data drift detection module for ECG classification."""
-
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd

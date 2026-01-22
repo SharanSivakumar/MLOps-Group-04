@@ -1,13 +1,10 @@
-"""Tests for drift detection module."""
-
 import json
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
 
-from src.drift_detection import DriftDetector, DriftLogger
+from drift.drift_detection import DriftDetector, DriftLogger
 
 
 @pytest.fixture
