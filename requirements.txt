@@ -660,7 +660,7 @@ starlette==0.41.3
     # via fastapi
 statsmodels==0.14.6
     # via evidently
-sympy==1.13.1
+sympy==1.14.0
     # via torch
 tabulate==0.9.0
     # via
