@@ -230,7 +230,7 @@ google-auth==2.47.0
     #   google-cloud-core
     #   google-cloud-storage
     #   google-cloud-storage-control
-google-auth-oauthlib==1.2.2
+google-auth-oauthlib==1.2.4
     # via gcsfs
 google-cloud-core==2.5.0
     # via google-cloud-storage
