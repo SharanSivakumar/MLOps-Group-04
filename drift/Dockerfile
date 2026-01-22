@@ -12,7 +12,11 @@ COPY requirements.txt /drift/requirements.txt
 COPY drift_api.py /drift/drift_api.py
 COPY drift_detection.py /drift/drift_detection.py
 COPY __init__.py /drift/__init__.py
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements.txt
+COPY entrypoint.sh /drift/entrypoint.sh
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements.txt && \
+    chmod +x /drift/entrypoint.sh
 
 EXPOSE 8080
-CMD ["sh", "-c", "python -m uvicorn drift_api:app --host 0.0.0.0 --port ${PORT:-8080}"]
+ENV PORT=8080
+
+CMD ["/drift/entrypoint.sh"]
