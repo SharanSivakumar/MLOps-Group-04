@@ -40,14 +40,14 @@ def load_latest_files(bucket_name: str, n: int = 5) -> pd.DataFrame:
 def run_analysis(reference_data: pd.DataFrame, current_data: pd.DataFrame) -> str:
     """Run the analysis and return the HTML content as a string with labels shown alongside numeric features."""
     numeric_features = ["mean", "std", "min", "max", "median"]
-    
+
     if "label" in reference_data.columns and "label" in current_data.columns:
         reference_data = reference_data.copy()
         current_data = current_data.copy()
-        
+
         reference_data["label"] = reference_data["label"].astype(str)
         current_data["label"] = current_data["label"].astype(str)
-    
+
     text_overview_report = Report(metrics=[DataDriftPreset()])
     snapshot = text_overview_report.run(reference_data=reference_data, current_data=current_data)
 
@@ -58,24 +58,28 @@ def run_analysis(reference_data: pd.DataFrame, current_data: pd.DataFrame) -> st
             snapshot.save_html(tmp.name)
             tmp.flush()
             html_content = Path(tmp.name).read_text(encoding="utf-8")
-            
+
             if "label" in reference_data.columns and "label" in current_data.columns:
-                html_content = enhance_html_with_label_stats(html_content, reference_data, current_data, numeric_features)
-        
+                html_content = enhance_html_with_label_stats(
+                    html_content, reference_data, current_data, numeric_features
+                )
+
         return html_content
     finally:
         if tmp_file and Path(tmp_file).exists():
             Path(tmp_file).unlink()
 
 
-def enhance_html_with_label_stats(html_content: str, reference_data: pd.DataFrame, current_data: pd.DataFrame, numeric_features: list) -> str:
+def enhance_html_with_label_stats(
+    html_content: str, reference_data: pd.DataFrame, current_data: pd.DataFrame, numeric_features: list
+) -> str:
     """Enhance HTML report with label statistics shown alongside numeric features."""
     label_stats_html = generate_label_stats_table(reference_data, current_data, numeric_features)
-    
+
     insertion_point = html_content.find("</body>")
     if insertion_point != -1:
         html_content = html_content[:insertion_point] + label_stats_html + html_content[insertion_point:]
-    
+
     return html_content
 
 
@@ -85,7 +89,7 @@ def generate_label_stats_table(reference_data: pd.DataFrame, current_data: pd.Da
     <div style="margin: 20px; padding: 20px; background-color: #f5f5f5; border-radius: 8px;">
         <h2 style="color: #2c3e50; margin-bottom: 20px;">Numeric Features Statistics by Label</h2>
     """
-    
+
     for dataset_name, dataset in [("Reference (Training)", reference_data), ("Current (Production)", current_data)]:
         html += f"""
         <div style="margin-bottom: 30px;">
@@ -95,16 +99,18 @@ def generate_label_stats_table(reference_data: pd.DataFrame, current_data: pd.Da
                     <tr style="background-color: #3498db; color: white;">
                         <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Label</th>
         """
-        
+
         for feature in numeric_features:
-            html += f'<th style="padding: 12px; text-align: center; border: 1px solid #ddd;">{feature.capitalize()}</th>'
-        
+            html += (
+                f'<th style="padding: 12px; text-align: center; border: 1px solid #ddd;">{feature.capitalize()}</th>'
+            )
+
         html += """
                     </tr>
                 </thead>
                 <tbody>
         """
-        
+
         if "label" in dataset.columns:
             for label in sorted(dataset["label"].unique()):
                 label_data = dataset[dataset["label"] == label]
@@ -112,7 +118,7 @@ def generate_label_stats_table(reference_data: pd.DataFrame, current_data: pd.Da
                     <tr style="border-bottom: 1px solid #ddd;">
                         <td style="padding: 12px; font-weight: bold; border: 1px solid #ddd; background-color: #ecf0f1; color: #2c3e50;">{label}</td>
                 """
-                
+
                 for feature in numeric_features:
                     if feature in label_data.columns:
                         mean_val = label_data[feature].mean()
@@ -129,19 +135,19 @@ def generate_label_stats_table(reference_data: pd.DataFrame, current_data: pd.Da
                         """
                     else:
                         html += '<td style="padding: 12px; text-align: center; border: 1px solid #ddd; color: #2c3e50; background-color: white;">-</td>'
-                
+
                 html += "</tr>"
-        
+
         html += """
                 </tbody>
             </table>
         </div>
         """
-    
+
     html += """
     </div>
     """
-    
+
     return html
 
 
@@ -209,20 +215,16 @@ async def get_report(n: int = 5, bucket_name: str = "psychic-iridium-484208-c3-m
     try:
         training_data = load_training_data()
         prediction_data = load_latest_files(bucket_name, n=n)
-        
+
         if len(prediction_data) == 0:
             raise HTTPException(status_code=404, detail="No production data found in GCS")
-        
+
         html_content = run_analysis(training_data, prediction_data)
 
         if not html_content or len(html_content.strip()) < 20:
             raise HTTPException(status_code=500, detail="Generated report is empty")
 
-        return Response(
-            content=html_content,
-            media_type="text/html",
-            headers={"Content-Disposition": "inline"}
-        )
+        return Response(content=html_content, media_type="text/html", headers={"Content-Disposition": "inline"})
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Report file not found")
     except Exception as e:

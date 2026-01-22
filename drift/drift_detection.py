@@ -128,7 +128,7 @@ class DriftDetector:
             self.reference_data = np.array(features)
             if labels is not None:
                 labels_array = labels.numpy() if hasattr(labels, "numpy") else np.array(labels)
-                self.reference_labels = labels_array[: n_samples]
+                self.reference_labels = labels_array[:n_samples]
             return self.reference_data
         except FileNotFoundError:
             print(f"Warning: Reference data file not found at {self.reference_data_path}")
@@ -213,7 +213,7 @@ class DriftDetector:
 
         # Create ValueDrift metrics for each feature
         metrics = [ValueDrift(column=col) for col in feature_names]
-        
+
         report = Report(metrics=metrics)
         report.run(reference_data=reference_df, current_data=production_df)
 

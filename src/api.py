@@ -177,7 +177,6 @@ async def predict(file: UploadFile = File(...)) -> JSONResponse:
                 input_data=data, prediction=predicted_class, probabilities=probs[0].cpu().numpy()
             )
 
-            
         classes = ["AF", "Noise", "NSR"]
         result = {
             "predicted_class_id": predicted_class,

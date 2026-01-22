@@ -82,9 +82,7 @@ def test_drift_detector_initialization(drift_detector):
 def test_drift_detector_load_production_data(drift_detector):
     """Test loading production data from GCS."""
     # Mock GCS data
-    mock_logs = [
-        {"features": {"mean": 0.5, "std": 0.2, "min": 0.0, "max": 1.0, "median": 0.5}, "prediction": 0}
-    ]
+    mock_logs = [{"features": {"mean": 0.5, "std": 0.2, "min": 0.0, "max": 1.0, "median": 0.5}, "prediction": 0}]
 
     with patch("src.drift_detection.storage.Client") as mock_client:
         mock_bucket = MagicMock()

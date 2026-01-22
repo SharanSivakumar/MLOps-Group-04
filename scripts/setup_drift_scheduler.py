@@ -15,7 +15,16 @@ def setup_drift_monitoring(project_id: str, region: str = "europe-north1"):
     # Get the drift API URL
     try:
         result = subprocess.run(
-            ["gcloud", "run", "services", "describe", "drift-detection-api", "--region", region, "--format=value(status.url)"],
+            [
+                "gcloud",
+                "run",
+                "services",
+                "describe",
+                "drift-detection-api",
+                "--region",
+                region,
+                "--format=value(status.url)",
+            ],
             capture_output=True,
             text=True,
             check=True,
