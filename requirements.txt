@@ -423,7 +423,7 @@ orjson==3.11.5 ; implementation_name == 'cpython'
     # via
     #   dvc-data
     #   sqltrie
-packaging==25.0
+packaging==26.0
     # via
     #   deprecation
     #   dvc
