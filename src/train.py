@@ -8,37 +8,37 @@ project_root = Path(__file__).parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
-from pytorch_lightning import Trainer, seed_everything
-from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
-from pytorch_lightning.loggers import WandbLogger
-from pytorch_lightning.profilers import PyTorchProfiler
-from loguru import logger
-import wandb
+from pytorch_lightning import Trainer, seed_everything  # noqa: E402
+from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping  # noqa: E402
+from pytorch_lightning.loggers import WandbLogger  # noqa: E402
+from pytorch_lightning.profilers import PyTorchProfiler  # noqa: E402
+from loguru import logger  # noqa: E402
+import wandb  # noqa: E402
 
-from src.data import ECGDataModule
-from src.model import ECGClassifier
+from src.data import ECGDataModule  # noqa: E402
+from src.model import ECGClassifier  # noqa: E402
+
 
 @hydra.main(version_base=None, config_path="..", config_name="config")
 def main(config: DictConfig):
     seed_everything(config.seed)
 
     logger.info("Starting ECG classification training")
-    logger.info(f"Configuration: batch_size={config.data.batch_size}, lr={config.model.lr}, max_epochs={config.training.max_epochs}, seed={config.seed}")
+    logger.info(
+        f"Configuration: batch_size={config.data.batch_size}, lr={config.model.lr}, max_epochs={config.training.max_epochs}, seed={config.seed}"
+    )
 
     # Data
     data_module = ECGDataModule(
         data_dir=config.data.data_dir,
         processed_dir=config.data.processed_dir,
         batch_size=config.data.batch_size,
-        num_workers=config.data.num_workers
+        num_workers=config.data.num_workers,
     )
     logger.info(f"Data module initialized from {config.data.data_dir}")
 
     # Model
-    model = ECGClassifier(
-        lr=config.model.lr,
-        num_classes=config.model.num_classes
-    )
+    model = ECGClassifier(lr=config.model.lr, num_classes=config.model.num_classes)
     logger.info(f"Model initialized with lr={config.model.lr}, num_classes={config.model.num_classes}")
 
     # Callbacks
@@ -52,9 +52,9 @@ def main(config: DictConfig):
     early_stopping = EarlyStopping(
         monitor=config.callbacks.early_stopping.monitor,
         patience=config.callbacks.early_stopping.patience,
-        mode=config.callbacks.early_stopping.mode
+        mode=config.callbacks.early_stopping.mode,
     )
-    
+
     # Profiler
     profiler = PyTorchProfiler(
         dirpath=config.profiler.dirpath,
@@ -66,17 +66,17 @@ def main(config: DictConfig):
 
     # Weights & Biases Logger
     wandb_logger = WandbLogger(
-        project=config.logging.get('project', 'ecg-classification'),
-        name=config.logging.get('name', 'ecg-experiment'),
+        project=config.logging.get("project", "ecg-classification"),
+        name=config.logging.get("name", "ecg-experiment"),
         config={
-            'batch_size': config.data.batch_size,
-            'lr': config.model.lr,
-            'max_epochs': config.training.max_epochs,
-            'seed': config.seed,
-            'num_classes': config.model.num_classes
-        }
+            "batch_size": config.data.batch_size,
+            "lr": config.model.lr,
+            "max_epochs": config.training.max_epochs,
+            "seed": config.seed,
+            "num_classes": config.model.num_classes,
+        },
     )
-    
+
     # Trainer
     trainer = Trainer(
         max_epochs=config.training.max_epochs,
@@ -96,7 +96,7 @@ def main(config: DictConfig):
     # Test
     test_results = trainer.test(model, data_module)
     logger.info("Testing completed")
-    
+
     # Log model as W&B artifact
     logger.info("Logging model as W&B artifact")
     best_model_path = checkpoint_callback.best_model_path
@@ -105,16 +105,14 @@ def main(config: DictConfig):
             name=f"{config.logging.get('name', 'ecg-model')}",
             type="model",
             description="ECG classification model trained with PyTorch Lightning",
-            metadata={
-                'test_results': test_results[0] if test_results else {},
-                'best_checkpoint': best_model_path
-            }
+            metadata={"test_results": test_results[0] if test_results else {}, "best_checkpoint": best_model_path},
         )
         artifact.add_file(best_model_path)
         wandb_logger.experiment.log_artifact(artifact)
         logger.success(f"Model artifact logged: {best_model_path}")
-    
+
     wandb.finish()
+
 
 if __name__ == "__main__":
     main()

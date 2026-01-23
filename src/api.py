@@ -1,7 +1,6 @@
 from contextlib import asynccontextmanager
 from http import HTTPStatus
-from typing import Dict, Optional
-from datetime import datetime
+from typing import Dict
 
 import torch
 import numpy as np
@@ -12,7 +11,6 @@ import os
 from google.cloud import storage
 
 from src.model import ECGClassifier
-from drift.drift_detection import DriftLogger
 
 # Global variables for model and device
 model = None
