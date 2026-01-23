@@ -26,77 +26,62 @@ class _DummyECGModel(torch.nn.Module):
         return torch.zeros((batch, 3), dtype=torch.float32, device=x.device)
 
 
-def _get_latest_ckpt_blob(client: storage.Client, bucket_name: str, prefix: str) -> storage.Blob:
-    """Return the most recently updated .ckpt blob under the given prefix."""
-    bucket = client.bucket(bucket_name)
-    blobs = [b for b in bucket.list_blobs(prefix=prefix) if b.name.endswith(".ckpt")]
-    if not blobs:
-        raise RuntimeError(f"No .ckpt files found in gs://{bucket_name}/{prefix}")
-    blobs.sort(key=lambda b: b.updated or datetime.min, reverse=True)
-    return blobs[0]
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global model, device, drift_logger
+    global model, device
 
-    checkpoint_dir = "checkpoints"
-    os.makedirs(checkpoint_dir, exist_ok=True)
-    checkpoint_path: Optional[str] = None
+    checkpoint_path = "checkpoints/ecg-epoch=01-val_loss=0.11.ckpt"
 
     try:
-        if os.environ.get("DISABLE_MODEL_DOWNLOAD") == "1":
-            device = torch.device("cpu")
-            model = _DummyECGModel()
-            model.to(device)
-            model.eval()
-            yield
-            return
-
-        gcs_uri = os.environ.get(
-            "MODEL_GCS_URI",
-            "gs://psychic-iridium-484208-c3-mlops-data/models/",
-        )
-        if not gcs_uri.startswith("gs://"):
-            raise RuntimeError("MODEL_GCS_URI must be a gs:// URI")
-        _p = gcs_uri[len("gs://") :]
-        bucket_name, _, blob_name = _p.partition("/")
-        if not blob_name:
-            raise RuntimeError("MODEL_GCS_URI must include a bucket path")
-
-        client = storage.Client()
-        if blob_name.endswith(".ckpt"):
-            selected_blob_name = blob_name
-        else:
-            prefix = blob_name if blob_name.endswith("/") else f"{blob_name}/"
-            selected_blob_name = _get_latest_ckpt_blob(client, bucket_name, prefix).name
-
-        checkpoint_path = os.path.join(checkpoint_dir, os.path.basename(selected_blob_name))
-
+        # If checkpoint not present locally, try to download from GCS
         if not os.path.exists(checkpoint_path):
-            bucket = client.bucket(bucket_name)
-            blob = bucket.blob(selected_blob_name)
-            print(f"Downloading model from gs://{bucket_name}/{selected_blob_name} to {checkpoint_path}...")
-            blob.download_to_filename(checkpoint_path)
-            print("Download complete.")
+            if os.environ.get("DISABLE_MODEL_DOWNLOAD") == "1":
+                device = torch.device("cpu")
+                model = _DummyECGModel()
+                model.to(device)
+                model.eval()
+                yield
+                return
 
+            gcs_uri = os.environ.get(
+                "MODEL_GCS_URI",
+                "gs://psychic-iridium-484208-c3-mlops-data/models/ecg-epoch=01-val_loss=0.11.ckpt",
+            )
+            if gcs_uri.startswith("gs://"):
+                # parse gs://bucket/path/to/object
+                _p = gcs_uri[len("gs://") :]
+                bucket_name, _, blob_name = _p.partition("/")
+                os.makedirs(os.path.dirname(checkpoint_path), exist_ok=True)
+                try:
+                    client = storage.Client()
+                    bucket = client.bucket(bucket_name)
+                    blob = bucket.blob(blob_name)
+                    print(f"Downloading model from {gcs_uri} to {checkpoint_path}...")
+                    blob.download_to_filename(checkpoint_path)
+                    print("Download complete.")
+                except Exception as e:
+                    print(f"Failed to download model from {gcs_uri}: {e}")
+                    if os.environ.get("CI") == "true" or os.environ.get("DISABLE_MODEL_DOWNLOAD") == "1":
+                        device = torch.device("cpu")
+                        model = _DummyECGModel()
+                        model.to(device)
+                        model.eval()
+                        yield
+                        return
+                    raise
+            else:
+                raise RuntimeError("MODEL_GCS_URI must be a gs:// URI when checkpoint is missing")
+        # Check if CUDA is available
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print(f"Loading model on {device}...")
 
+        # Load model from checkpoint
+        # strict=False might be needed if there are slight mismatches, but ideally should be True
         model = ECGClassifier.load_from_checkpoint(checkpoint_path, map_location=device)
         model.to(device)
         model.eval()
         print("Model loaded successfully.")
-
-        # Initialize drift logger
-        drift_logger = DriftLogger()
-        print("Drift logger initialized.")
-
         yield
-
-        # Flush any remaining logs before shutdown
-        if drift_logger:
-            drift_logger.flush()
     except Exception as e:
         print(f"Error loading model: {e}")
         raise RuntimeError(f"Failed to load model from {checkpoint_path}")
@@ -169,13 +154,7 @@ async def predict(file: UploadFile = File(...)) -> JSONResponse:
         with torch.no_grad():
             logits = model(tensor_data)
             probs = torch.softmax(logits, dim=1)
-        # Log prediction for drift monitoring
-        predicted_class = torch.argmax(probs, dim=1).item()
-
-        if drift_logger:
-            drift_logger.log_prediction(
-                input_data=data, prediction=predicted_class, probabilities=probs[0].cpu().numpy()
-            )
+            predicted_class = torch.argmax(probs, dim=1).item()
 
         classes = ["AF", "Noise", "NSR"]
         result = {

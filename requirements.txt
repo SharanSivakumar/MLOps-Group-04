@@ -63,6 +63,7 @@ certifi==2026.1.4
     #   httpcore
     #   httpx
     #   requests
+    #   sentry-sdk
 cffi==2.0.0
     # via
     #   cryptography
@@ -86,6 +87,7 @@ click==8.3.1
     #   rich-click
     #   typer
     #   uvicorn
+    #   wandb
 click-didyoumean==0.3.1
     # via celery
 click-plugins==1.1.1.2
@@ -130,7 +132,7 @@ distro==1.9.0
     #   iterative-telemetry
 dpath==2.2.0
     # via dvc
-dulwich==1.0.0
+dulwich==0.25.2
     # via
     #   dvc
     #   dvc-studio-client
@@ -216,7 +218,9 @@ ghp-import==2.1.0
 gitdb==4.0.12
     # via gitpython
 gitpython==3.1.46
-    # via scmrepo
+    # via
+    #   scmrepo
+    #   wandb
 google-api-core==2.29.0
     # via
     #   google-cloud-core
@@ -230,7 +234,7 @@ google-auth==2.47.0
     #   google-cloud-core
     #   google-cloud-storage
     #   google-cloud-storage-control
-google-auth-oauthlib==1.2.4
+google-auth-oauthlib==1.2.2
     # via gcsfs
 google-cloud-core==2.5.0
     # via google-cloud-storage
@@ -238,7 +242,7 @@ google-cloud-storage==3.8.0
     # via
     #   gcsfs
     #   group04
-google-cloud-storage-control==1.9.0
+google-cloud-storage-control==1.8.0
     # via gcsfs
 google-crc32c==1.8.0
     # via
@@ -286,7 +290,7 @@ httpx==0.28.1
     #   litestar
 hydra-core==1.3.2
     # via dvc
-identify==2.6.16
+identify==2.6.15
     # via pre-commit
 idna==3.11
     # via
@@ -433,6 +437,7 @@ packaging==25.0
     #   statsmodels
     #   tensorboard
     #   torchmetrics
+    #   wandb
 paginate==0.5.7
     # via mkdocs-material
 pandas==2.3.3
@@ -440,7 +445,7 @@ pandas==2.3.3
     #   evidently
     #   group04
     #   statsmodels
-pathspec==1.0.3
+pathspec==0.12.1
     # via
     #   dvc
     #   mkdocs
@@ -458,6 +463,7 @@ platformdirs==4.5.1
     #   dvc
     #   mkdocs-get-deps
     #   virtualenv
+    #   wandb
 plotly==5.24.1
     # via evidently
 pluggy==1.6.0
@@ -475,7 +481,7 @@ proto-plus==1.27.0
     # via
     #   google-api-core
     #   google-cloud-storage-control
-protobuf==6.33.4
+protobuf==6.33.3
     # via
     #   google-api-core
     #   google-cloud-storage-control
@@ -485,6 +491,7 @@ protobuf==6.33.4
     #   opentelemetry-proto
     #   proto-plus
     #   tensorboard
+    #   wandb
 psutil==7.2.1
     # via
     #   dvc
@@ -492,7 +499,7 @@ psutil==7.2.1
     #   locust
 pyarrow==23.0.0
     # via pandas
-pyasn1==0.6.2
+pyasn1==0.6.1
     # via
     #   pyasn1-modules
     #   rsa
@@ -507,6 +514,7 @@ pydantic==2.12.5
     #   group04
     #   gto
     #   pydantic-settings
+    #   wandb
 pydantic-core==2.41.5
     # via pydantic
 pydantic-settings==2.12.0
@@ -575,11 +583,12 @@ pyyaml==6.0.3
     #   pytorch-lightning
     #   pyyaml-env-tag
     #   uvicorn
+    #   wandb
 pyyaml-env-tag==1.1
     # via mkdocs
 pyzmq==27.1.0
     # via locust
-regex==2026.1.15
+regex==2025.11.3
     # via
     #   mkdocs-material
     #   nltk
@@ -596,6 +605,7 @@ requests==2.32.5
     #   mkdocs-material
     #   python-socketio
     #   requests-oauthlib
+    #   wandb
 requests-oauthlib==2.0.0
     # via google-auth-oauthlib
 rich==14.2.0
@@ -619,7 +629,7 @@ scikit-learn==1.8.0
     # via
     #   evidently
     #   group04
-scipy==1.17.0
+scipy==1.16.3
     # via
     #   evidently
     #   scikit-learn
@@ -630,6 +640,8 @@ scmrepo==3.6.1
     #   gto
 semver==3.0.4
     # via gto
+sentry-sdk==2.50.0
+    # via wandb
 setuptools==80.9.0
     # via
     #   lightning-utilities
@@ -660,7 +672,7 @@ starlette==0.41.3
     # via fastapi
 statsmodels==0.14.6
     # via evidently
-sympy==1.14.0
+sympy==1.13.1
     # via torch
 tabulate==0.9.0
     # via
@@ -682,7 +694,7 @@ torch==2.6.0 ; python_full_version < '3.14' and sys_platform == 'darwin'
     #   pytorch-lightning
     #   torchmetrics
     #   torchvision
-torch==2.6.0 ; python_full_version >= '3.14' or sys_platform != 'darwin'
+torch==2.6.0+cpu ; python_full_version >= '3.14' or sys_platform != 'darwin'
     # via
     #   group04
     #   pytorch-lightning
@@ -694,7 +706,7 @@ torchmetrics==1.8.2
     #   pytorch-lightning
 torchvision==0.21.0 ; (python_full_version < '3.14' and platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux') or (python_full_version < '3.14' and sys_platform == 'darwin')
     # via group04
-torchvision==0.21.0 ; (python_full_version >= '3.14' and sys_platform == 'darwin') or (python_full_version >= '3.14' and sys_platform == 'linux') or (platform_machine != 'aarch64' and sys_platform == 'linux') or (platform_python_implementation != 'CPython' and sys_platform == 'linux') or (sys_platform != 'darwin' and sys_platform != 'linux')
+torchvision==0.21.0+cpu ; (python_full_version >= '3.14' and sys_platform == 'darwin') or (python_full_version >= '3.14' and sys_platform == 'linux') or (platform_machine != 'aarch64' and sys_platform == 'linux') or (platform_python_implementation != 'CPython' and sys_platform == 'linux') or (sys_platform != 'darwin' and sys_platform != 'linux')
     # via group04
 tqdm==4.67.1
     # via
@@ -726,6 +738,7 @@ typing-extensions==4.15.0
     #   typer
     #   typing-inspect
     #   typing-inspection
+    #   wandb
 typing-inspect==0.9.0
     # via evidently
 typing-inspection==0.4.2
@@ -748,6 +761,7 @@ urllib3==2.6.3
     #   evidently
     #   geventhttpclient
     #   requests
+    #   sentry-sdk
 uuid6==2025.0.1
     # via evidently
 uvicorn==0.40.0
@@ -767,6 +781,8 @@ voluptuous==0.16.0
     # via
     #   dvc
     #   dvc-studio-client
+wandb==0.24.0
+    # via group04
 watchdog==6.0.0
     # via
     #   evidently
