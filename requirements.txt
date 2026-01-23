@@ -616,7 +616,7 @@ rich==14.2.0
     #   litestar
     #   rich-click
     #   typer
-rich-click==1.9.5
+rich-click==1.9.6
     # via litestar
 rsa==4.9.1
     # via google-auth
