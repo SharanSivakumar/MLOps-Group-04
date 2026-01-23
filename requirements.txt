@@ -257,7 +257,7 @@ googleapis-common-protos==1.72.0
     #   grpcio-status
 grandalf==0.8
     # via dvc
-greenlet==3.3.0 ; platform_python_implementation == 'CPython'
+greenlet==3.3.1 ; platform_python_implementation == 'CPython'
     # via gevent
 griffe==1.15.0
     # via mkdocstrings-python
