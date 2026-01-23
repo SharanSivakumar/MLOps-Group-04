@@ -1,13 +1,12 @@
 import json
-from datetime import datetime
+from datetime import datetime, UTC
 from pathlib import Path
 from typing import Dict, List, Optional
-
 import numpy as np
 import pandas as pd
 import torch
 from evidently import Report
-from evidently.metrics import ValueDrift
+from evidently.presets import DataDriftPreset
 from google.cloud import storage
 
 
@@ -29,7 +28,7 @@ class DriftLogger:
     ) -> None:
         """Log a single prediction with input data."""
         if timestamp is None:
-            timestamp = datetime.utcnow()
+            timestamp = datetime.now(UTC)
 
         # Extract features from input (e.g., statistical summaries)
         features = {
@@ -63,7 +62,7 @@ class DriftLogger:
             bucket = client.bucket(self.bucket_name)
 
             # Create filename with timestamp
-            filename = f"{self.logs_prefix}/predictions_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.jsonl"
+            filename = f"{self.logs_prefix}/predictions_{datetime.now(UTC).strftime('%Y%m%d_%H%M%S')}.jsonl"
             blob = bucket.blob(filename)
 
             # Write as JSON lines
@@ -205,57 +204,29 @@ class DriftDetector:
 
         # Lazy-load reference data
         feature_names = ["mean", "std", "min", "max", "median"]
-        reference_df = self.get_reference_dataframe()[feature_names]
+        reference_df = self.get_reference_dataframe()
         if isinstance(production_data, pd.DataFrame):
-            production_df = production_data[feature_names]
+            production_df = production_data
         else:
             production_df = pd.DataFrame(production_data, columns=feature_names)
 
-        # Create ValueDrift metrics for each feature
-        metrics = [ValueDrift(column=col) for col in feature_names]
-
-        report = Report(metrics=metrics)
-        report.run(reference_data=reference_df, current_data=production_df)
+        # Create drift report
+        report = Report(metrics=[DataDriftPreset()])
+        snapshot = report.run(reference_data=reference_df, current_data=production_df)
 
         # Save report as HTML
-        report_path = f"reports/drift_report_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.html"
+        report_path = f"reports/drift_report_{datetime.now(UTC).strftime('%Y%m%d_%H%M%S')}.html"
         Path("reports").mkdir(exist_ok=True)
-        report.save_html(report_path)
-
-        # Extract drift results
-        report_dict = report.as_dict()
-        drift_detected = False
-        drifted_features = []
-
-        # Check each metric result for drift
-        if "metrics" in report_dict:
-            for metric in report_dict["metrics"]:
-                result = metric.get("result", {})
-                if result.get("drift_detected", False):
-                    column_name = result.get("column_name", "unknown")
-                    drifted_features.append(column_name)
-                    drift_detected = True
-
-        return {
-            "drift_detected": drift_detected,
-            "drifted_features": drifted_features,
-            "report_path": report_path,
-            "n_reference_samples": len(reference_df),
-            "n_production_samples": len(production_df),
-            "timestamp": datetime.utcnow().isoformat(),
-        }
+        snapshot.save_html(report_path)
 
 
 if __name__ == "__main__":
     # Test drift detection
     detector = DriftDetector()
-    production_data = detector.load_production_data("psychic-iridium-484208-c3-mlops-data")
+    production_data = detector.load_production_data("psychic-iridium-484208-c3-mlops-data", include_predictions=True)
 
     if len(production_data) > 0:
         result = detector.detect_drift(production_data)
-        print("Drift Detection Results:")
-        print(f"  Drift Detected: {result['drift_detected']}")
-        print(f"  Drifted Features: {result['drifted_features']}")
-        print(f"  Report: {result['report_path']}")
+        print("Drift Detection Results are saved in the reports directory.")
     else:
         print("No production data available yet")
