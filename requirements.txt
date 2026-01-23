@@ -335,7 +335,7 @@ locust==2.43.1
     # via group04
 loguru==0.7.3
     # via group04
-markdown==3.10
+markdown==3.10.1
     # via
     #   group04
     #   mkdocs
