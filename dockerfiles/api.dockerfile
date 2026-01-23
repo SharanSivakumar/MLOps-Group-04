@@ -8,10 +8,11 @@ RUN uv sync --frozen --no-install-project
 
 COPY src/ ./src/
 COPY drift/ ./drift/
-RUN uv sync --frozen
+COPY dockerfiles/api_entrypoint.sh /app/api_entrypoint.sh
+RUN uv sync --frozen && chmod +x /app/api_entrypoint.sh
 
-ENV PORT=8000
+ENV PORT=8080
 
-ENTRYPOINT ["uv", "run", "uvicorn", "src.api:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["/app/api_entrypoint.sh"]
 
 # Checkpoints are downloaded at container startup from GCS; do not copy at build time.

@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 import os
 
 from google.cloud import storage
+from google.auth.exceptions import DefaultCredentialsError
 
 from src.model import ECGClassifier
 
@@ -57,15 +58,23 @@ async def lifespan(app: FastAPI):
                     print(f"Downloading model from {gcs_uri} to {checkpoint_path}...")
                     blob.download_to_filename(checkpoint_path)
                     print("Download complete.")
-                except Exception as e:
+                except (DefaultCredentialsError, Exception) as e:
                     print(f"Failed to download model from {gcs_uri}: {e}")
-                    if os.environ.get("CI") == "true" or os.environ.get("DISABLE_MODEL_DOWNLOAD") == "1":
+                    # Fall back to dummy model if credentials are missing or explicitly disabled
+                    # In Cloud Run, credentials should be available automatically
+                    if (
+                        isinstance(e, DefaultCredentialsError)
+                        or os.environ.get("CI") == "true"
+                        or os.environ.get("DISABLE_MODEL_DOWNLOAD") == "1"
+                    ):
+                        print("Falling back to dummy model...")
                         device = torch.device("cpu")
                         model = _DummyECGModel()
                         model.to(device)
                         model.eval()
                         yield
                         return
+                    # Re-raise if it's a different error and we're in production
                     raise
             else:
                 raise RuntimeError("MODEL_GCS_URI must be a gs:// URI when checkpoint is missing")

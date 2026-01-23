@@ -16,7 +16,7 @@ def drift_logger():
 @pytest.fixture
 def drift_detector():
     """Create a drift detector for testing."""
-    with patch("src.drift_detection.torch.load") as mock_load:
+    with patch("drift.drift_detection.torch.load") as mock_load:
         # Mock training data
         mock_data = {
             "x": np.random.randn(100, 1, 224, 224).astype(np.float32),
@@ -57,7 +57,7 @@ def test_drift_logger_buffer_flush(drift_logger):
     probabilities = np.array([0.8, 0.1, 0.1])
 
     # Mock GCS client
-    with patch("src.drift_detection.storage.Client") as mock_client:
+    with patch("drift.drift_detection.storage.Client") as mock_client:
         mock_bucket = MagicMock()
         mock_blob = MagicMock()
         mock_client.return_value.bucket.return_value = mock_bucket
@@ -84,7 +84,7 @@ def test_drift_detector_load_production_data(drift_detector):
     # Mock GCS data
     mock_logs = [{"features": {"mean": 0.5, "std": 0.2, "min": 0.0, "max": 1.0, "median": 0.5}, "prediction": 0}]
 
-    with patch("src.drift_detection.storage.Client") as mock_client:
+    with patch("drift.drift_detection.storage.Client") as mock_client:
         mock_bucket = MagicMock()
         mock_blob = MagicMock()
         mock_client.return_value.bucket.return_value = mock_bucket
@@ -103,7 +103,7 @@ def test_drift_detector_detect_drift(drift_detector):
     # Create synthetic production data with drift
     production_data = np.random.randn(50, 5) + 2.0  # Shifted distribution
 
-    with patch("src.drift_detection.Report") as mock_report:
+    with patch("drift.drift_detection.Report") as mock_report:
         mock_report_instance = MagicMock()
         mock_report.return_value = mock_report_instance
 
