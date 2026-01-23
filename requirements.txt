@@ -242,7 +242,7 @@ google-cloud-storage==3.8.0
     # via
     #   gcsfs
     #   group04
-google-cloud-storage-control==1.8.0
+google-cloud-storage-control==1.9.0
     # via gcsfs
 google-crc32c==1.8.0
     # via
