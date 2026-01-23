@@ -642,7 +642,7 @@ semver==3.0.4
     # via gto
 sentry-sdk==2.50.0
     # via wandb
-setuptools==80.9.0
+setuptools==80.10.1
     # via
     #   lightning-utilities
     #   tensorboard
