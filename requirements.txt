@@ -464,7 +464,7 @@ platformdirs==4.5.1
     #   mkdocs-get-deps
     #   virtualenv
     #   wandb
-plotly==5.24.1
+plotly==6.5.2
     # via evidently
 pluggy==1.6.0
     # via pytest
